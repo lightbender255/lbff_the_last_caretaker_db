@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('dbAPI', {
   getPOIByName: (name) => ipcRenderer.invoke('get-poi-by-name', name),
   searchPOIs: (searchTerm) => ipcRenderer.invoke('search-pois', searchTerm),
   getPOIsByType: (type) => ipcRenderer.invoke('get-pois-by-type', type),
-  getPOITypes: () => ipcRenderer.invoke('get-poi-types')
+  getPOITypes: () => ipcRenderer.invoke('get-poi-types'),
+  onDatabaseUpdated: (callback) => ipcRenderer.on('database-updated', callback)
 });

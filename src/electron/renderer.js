@@ -4,7 +4,6 @@ let filteredPOIs = [];
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
 const typeFilter = document.getElementById('typeFilter');
-const loadAllBtn = document.getElementById('loadAllBtn');
 const clearBtn = document.getElementById('clearBtn');
 const poiTableBody = document.getElementById('poiTableBody');
 const totalCount = document.getElementById('totalCount');
@@ -155,7 +154,6 @@ function clearFilters() {
 }
 
 // Event Listeners
-loadAllBtn.addEventListener('click', loadAllPOIs);
 clearBtn.addEventListener('click', clearFilters);
 
 searchInput.addEventListener('input', (e) => {
@@ -172,4 +170,11 @@ typeFilter.addEventListener('change', (e) => {
 // Load POIs on startup
 window.addEventListener('DOMContentLoaded', () => {
   console.log('Database Viewer Ready');
+  loadAllPOIs();
+  
+  // Listen for database updates
+  window.dbAPI.onDatabaseUpdated(() => {
+    console.log('Database updated externally, refreshing...');
+    loadAllPOIs();
+  });
 });

@@ -5,6 +5,7 @@ const initSqlJs = require('sql.js');
 
 let mainWindow;
 let db;
+let dbWatcher;
 
 async function initDatabase() {
   try {
@@ -13,6 +14,31 @@ async function initDatabase() {
     const buffer = fs.readFileSync(dbPath);
     db = new SQL.Database(buffer);
     console.log('Database loaded successfully');
+    
+    // Watch for database file changes
+    if (dbWatcher) {
+      dbWatcher.close();
+    }
+    
+    dbWatcher = fs.watch(dbPath, async (eventType) => {
+      if (eventType === 'change') {
+        console.log('Database file changed, reloading...');
+        try {
+          const newBuffer = fs.readFileSync(dbPath);
+          db.close();
+          db = new SQL.Database(newBuffer);
+          console.log('Database reloaded successfully');
+          
+          // Notify renderer to refresh
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('database-updated');
+          }
+        } catch (error) {
+          console.error('Error reloading database:', error);
+        }
+      }
+    });
+    
   } catch (error) {
     console.error('Failed to load database:', error);
   }
@@ -133,6 +159,9 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
+  if (dbWatcher) {
+    dbWatcher.close();
+  }
   if (process.platform !== 'darwin') {
     app.quit();
   }
