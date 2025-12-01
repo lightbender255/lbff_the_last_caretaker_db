@@ -94,10 +94,17 @@
 
     .poi-grid {
       flex: 1;
-      overflow-y: auto;
+      overflow: hidden;
       background: rgba(0,0,0,0.2);
       border-radius: 10px;
       padding: 15px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .poi-table-wrapper {
+      overflow-y: auto;
+      flex: 1;
     }
 
     .poi-table {
@@ -106,7 +113,7 @@
     }
 
     .poi-table th {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.15);
       backdrop-filter: blur(10px);
       padding: 12px;
       text-align: left;
@@ -184,29 +191,31 @@
     <div id="errorContainer"></div>
 
     <div class="poi-grid">
-      <table class="poi-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>X</th>
-            <th>Y</th>
-            <th>Type</th>
-            <th>Bio Hostiles</th>
-            <th>Mech Hostiles</th>
-            <th>Salvage</th>
-            <th>Power</th>
-            <th>Beacon</th>
-            <th>Depth</th>
-            <th>PSI</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody id="poiTableBody">
-          <tr>
-            <td colspan="12" class="loading">Click "Load All POIs" to view the database</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="poi-table-wrapper">
+        <table class="poi-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>X</th>
+              <th>Y</th>
+              <th>Type</th>
+              <th>Bio Hostiles</th>
+              <th>Mech Hostiles</th>
+              <th>Salvage</th>
+              <th>Power</th>
+              <th>Beacon</th>
+              <th>Depth</th>
+              <th>PSI</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="poiTableBody">
+            <tr>
+              <td colspan="12" class="loading">Click "Load All POIs" to view the database</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
