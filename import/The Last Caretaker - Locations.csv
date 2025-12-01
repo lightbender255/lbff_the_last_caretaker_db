@@ -1,0 +1,14 @@
+X,Y,Name,Type,Bio Hostiles,Mech Hostiles,Salvage,Power,Beacon,Depth,Floor Depth,PSI,Notes
+115,11,The Last Listener Station,Beacon,Cleared,0/4,WIP,Yes,WIP,0,0,0,Need MOSES access clearence to get into beacon room.
+82,-15,Habitat Node 04-7,Habitat,No,0,Cleared,N.A.,None,0,0,0,
+47,-49,Habitat Node 02-23,Habitat,Cleared,3,WIP,N.A.,None,0,0,0,
+60,-26,Helios Reserve Gemini,Reserve,Yes,Unkown,Yes,No,None,0,0,0,
+62,-64,Helios Reserve Draco,Reserve,Cleared,0/1,Yes,Yes,None,0,0,0,
+74,-31,Nomad's Tower,Tower,Yes,0,Cleared,Yes,None,0,0,0,
+85,-75,York Grave,Underwater,Unknown,Unknown,Unknown,Unknown,None,> 60,,,
+59,-41,Norfolk Grave,Underwater,Yes,Unkown,Yes,N.A.,None,50,,400,
+57,-14,Brighton Grave,Underwater,Unknown,Unkown,Unknown,No,None,176,,,
+103,17,Hamptom Grave,Underwater,Yes,Unknown,WIP,N.A.,None,145,,145,Sea floor is deeper than current pressure capacity. See screen shots (ShareX)
+82,-65,Seed Vault Prometheus,Vault,In Progress,Unkown,Yes,Yes,None,0,0,0,
+97,15,Habitat Node 03-12.3,Habitat,Yes,Unknown,Yes,WIP,None,0,0,0,Not visited
+66,22,Central Warehouse,Warehouse,Yes,0/2,WIP,WIP,Unknown,0,0,0,Outside cleared.
