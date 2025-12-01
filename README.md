@@ -1,3 +1,15 @@
 # Lightbender's "The Last Caretaker" Database
 
-A SQLite database to keep track of POIs and other data things.
+A SQLite database and Electron application to keep track of POIs and other data things.
+
+# TO DO
+
+## Required
+
+- [ ] feature: create new record.  Data to be entered in modal popup.
+- [ ] feature: edit record fields in grid.
+
+## Stretch Goals
+
+- [ ] feature: create a database table(s) to define the allowed values for each of the poi table's fields
+- [ ] Ask LLM chat for ideas on defining the allowed values for each field.
