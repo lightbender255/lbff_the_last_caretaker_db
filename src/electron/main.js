@@ -301,6 +301,25 @@ ipcMain.handle('update-poi', async (event, { id, updates }) => {
   }
 });
 
+ipcMain.handle('delete-poi', async (event, id) => {
+  try {
+    const stmt = db.prepare('DELETE FROM poi WHERE rowid = ?');
+    stmt.run([id]);
+    stmt.free();
+
+    // Save database to disk
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    const dbPath = path.join(__dirname, '../../data/the_last_caretaker.db');
+    fs.writeFileSync(dbPath, buffer);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting POI:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 app.whenReady().then(async () => {
   await initDatabase();
   createWindow();

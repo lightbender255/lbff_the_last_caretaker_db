@@ -148,8 +148,11 @@ function renderPOIs(pois) {
     return;
   }
 
-  poiTableBody.innerHTML = pois.map(poi => `
-    <tr data-id="${poi.id}">
+  poiTableBody.innerHTML = '';
+  pois.forEach(poi => {
+    const row = document.createElement('tr');
+    row.dataset.id = poi.id;
+    row.innerHTML = `
       <td class="editable" data-field="name">${escapeHtml(poi.name)}</td>
       <td class="editable" data-field="x">${poi.x !== null ? poi.x : '-'}</td>
       <td class="editable" data-field="y">${poi.y !== null ? poi.y : '-'}</td>
@@ -165,11 +168,23 @@ function renderPOIs(pois) {
       <td class="editable" data-field="max_explored_depth_m">${poi.max_explored_depth_m !== null ? poi.max_explored_depth_m : '-'}</td>
       <td class="editable" data-field="max_psi_reached">${poi.max_psi_reached !== null ? poi.max_psi_reached : '-'}</td>
       <td class="editable" data-field="notes">${escapeHtml(poi.notes || '-')}</td>
-    </tr>
-  `).join('');
+    `;
+
+    // Add click listener to open modal
+    row.addEventListener('click', (e) => {
+      // Don't open modal if clicking an editable cell (if we want to keep inline editing)
+      // But user requested "click on row should open details modal"
+      // Let's prioritize modal opening, but maybe check if we want to keep inline editing?
+      // The requirement implies modal is the primary way now.
+      // Let's open modal.
+      openAddModal(poi);
+    });
+
+    poiTableBody.appendChild(row);
+  });
 
   showingCount.textContent = pois.length;
-  attachEditListeners();
+  // attachEditListeners(); // Inline editing might conflict, disabling for now as per "click on row should open details modal"
 }
 
 function attachEditListeners() {
@@ -322,17 +337,34 @@ const closeAddModal = document.querySelector('#addPoiModal .close-modal');
 const cancelAddBtn = document.getElementById('cancelAddBtn');
 const addPoiForm = document.getElementById('addPoiForm');
 const typeList = document.getElementById('typeList');
+const deletePoiBtn = document.getElementById('deletePoiBtn');
+const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+const closeDeleteModal = document.querySelector('#deleteConfirmModal .close-modal');
+
+let currentEditingId = null;
 
 // Modal Functions
-async function openAddModal() {
+async function openAddModal(poi = null) {
   addPoiModal.style.display = 'flex';
+
+  // Reset form and state
+  addPoiForm.reset();
+  currentEditingId = null;
+  document.querySelector('#addPoiModal h2').textContent = 'Add New POI';
+  deletePoiBtn.style.display = 'none';
 
   // Helper to populate select
   const populateSelect = async (elementId, category) => {
     const select = document.getElementById(elementId);
     if (!select) return;
 
-    select.innerHTML = '<option value="">Select...</option>';
+    // Clear existing options except the first one
+    while (select.options.length > 1) {
+      select.remove(1);
+    }
+
     try {
       const result = await window.dbAPI.getLookupValues(category);
       if (result.success) {
@@ -350,7 +382,6 @@ async function openAddModal() {
 
   // Populate all dropdowns
   await Promise.all([
-    populateSelect('typeList', 'Type'), // Note: typeList is a datalist, handled separately below if needed, but keeping existing logic for now
     populateSelect('poiBioHostiles', 'Bio Hostiles'),
     populateSelect('poiMechHostiles', 'Mech Hostiles'),
     populateSelect('poiSalvage', 'Salvage'),
@@ -358,7 +389,7 @@ async function openAddModal() {
     populateSelect('poiBeacon', 'Beacon')
   ]);
 
-  // Populate type datalist (keeping existing logic for Type as it allows custom values)
+  // Populate type datalist
   window.dbAPI.getPOITypes().then(result => {
     if (result.success) {
       typeList.innerHTML = '';
@@ -369,22 +400,80 @@ async function openAddModal() {
       });
     }
   });
+
+  // If editing, populate form
+  if (poi) {
+    currentEditingId = poi.id;
+    document.querySelector('#addPoiModal h2').textContent = 'Edit POI';
+    deletePoiBtn.style.display = 'block';
+
+    document.getElementById('poiName').value = poi.name || '';
+    document.getElementById('poiX').value = poi.x || '';
+    document.getElementById('poiY').value = poi.y || '';
+    document.getElementById('poiType').value = poi.type || '';
+    document.getElementById('poiDepthM').value = poi.depth_m || '';
+    document.getElementById('poiOceanFloorDepthM').value = poi.ocean_floor_depth_m || '';
+    document.getElementById('poiTopDepthM').value = poi.top_depth_m || '';
+    document.getElementById('poiMaxExploredDepthM').value = poi.max_explored_depth_m || '';
+    document.getElementById('poiMaxPsiReached').value = poi.max_psi_reached || '';
+    document.getElementById('poiBioHostiles').value = poi.bio_hostiles || '';
+    document.getElementById('poiMechHostiles').value = poi.mech_hostiles || '';
+    document.getElementById('poiSalvage').value = poi.salvage || '';
+    document.getElementById('poiPower').value = poi.power || '';
+    document.getElementById('poiBeacon').value = poi.beacon || '';
+    document.getElementById('poiNotes').value = poi.notes || '';
+  }
 }
 
 function closeAddModalFunc() {
   addPoiModal.style.display = 'none';
   addPoiForm.reset();
+  currentEditingId = null;
+}
+
+function openDeleteConfirmModal() {
+  deleteConfirmModal.style.display = 'flex';
+}
+
+function closeDeleteConfirmModalFunc() {
+  deleteConfirmModal.style.display = 'none';
 }
 
 // Add POI Event Listeners
-addPoiBtn.addEventListener('click', openAddModal);
+addPoiBtn.addEventListener('click', () => openAddModal(null));
 closeAddModal.addEventListener('click', closeAddModalFunc);
 cancelAddBtn.addEventListener('click', closeAddModalFunc);
 
 // Close modal when clicking outside
+// Close modal when clicking outside
 window.addEventListener('click', (e) => {
   if (e.target === addPoiModal) {
     closeAddModalFunc();
+  }
+  if (e.target === deleteConfirmModal) {
+    closeDeleteConfirmModalFunc();
+  }
+});
+
+// Delete Flow
+deletePoiBtn.addEventListener('click', openDeleteConfirmModal);
+cancelDeleteBtn.addEventListener('click', closeDeleteConfirmModalFunc);
+closeDeleteModal.addEventListener('click', closeDeleteConfirmModalFunc);
+
+confirmDeleteBtn.addEventListener('click', async () => {
+  if (currentEditingId) {
+    try {
+      const result = await window.dbAPI.deletePOI(currentEditingId);
+      if (result.success) {
+        closeDeleteConfirmModalFunc();
+        closeAddModalFunc();
+        loadAllPOIs();
+      } else {
+        alert(`Failed to delete POI: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Error deleting POI: ${error.message}`);
+    }
   }
 });
 
@@ -411,14 +500,19 @@ addPoiForm.addEventListener('submit', async (e) => {
   };
 
   try {
-    const result = await window.dbAPI.createPOI(formData);
+    let result;
+    if (currentEditingId) {
+      result = await window.dbAPI.updatePOI(currentEditingId, formData);
+    } else {
+      result = await window.dbAPI.createPOI(formData);
+    }
 
     if (result.success) {
       closeAddModalFunc();
       loadAllPOIs(); // Refresh grid
       // Optional: Show success message
     } else {
-      alert(`Failed to create POI: ${result.error}`);
+      alert(`Failed to ${currentEditingId ? 'update' : 'create'} POI: ${result.error}`);
     }
   } catch (error) {
     alert(`Error: ${error.message}`);
