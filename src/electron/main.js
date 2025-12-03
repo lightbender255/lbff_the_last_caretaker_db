@@ -3,6 +3,12 @@ const path = require('path');
 const fs = require('fs');
 const initSqlJs = require('sql.js');
 
+try {
+  require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, '../../node_modules', '.bin', 'electron')
+  });
+} catch (_) { }
+
 let mainWindow;
 let db;
 let dbWatcher;
@@ -221,18 +227,18 @@ ipcMain.handle('create-poi', async (event, poiData) => {
     const {
       name, x, y, type, bio_hostiles, mech_hostiles,
       salvage, power, beacon, depth_m, ocean_floor_depth_m,
-      top_depth_m, max_explored_depth_m, psi, notes
+      top_depth_m, max_explored_depth_m, max_psi_reached, notes
     } = poiData;
 
     const stmt = db.prepare(`
       INSERT INTO poi (
         name, x, y, type, bio_hostiles, mech_hostiles,
         salvage, power, beacon, depth_m, ocean_floor_depth_m,
-        top_depth_m, max_explored_depth_m, psi, notes
+        top_depth_m, max_explored_depth_m, max_psi_reached, notes
       ) VALUES (
         @name, @x, @y, @type, @bio_hostiles, @mech_hostiles,
         @salvage, @power, @beacon, @depth_m, @ocean_floor_depth_m,
-        @top_depth_m, @max_explored_depth_m, @psi, @notes
+        @top_depth_m, @max_explored_depth_m, @max_psi_reached, @notes
       )
     `);
 
@@ -250,7 +256,7 @@ ipcMain.handle('create-poi', async (event, poiData) => {
       '@ocean_floor_depth_m': ocean_floor_depth_m,
       '@top_depth_m': top_depth_m,
       '@max_explored_depth_m': max_explored_depth_m,
-      '@psi': psi,
+      '@max_psi_reached': max_psi_reached,
       '@notes': notes
     });
 

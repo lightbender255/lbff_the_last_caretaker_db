@@ -244,11 +244,11 @@
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
+      gap: 8px;
     }
 
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 8px;
     }
 
     .form-group.full-width {
@@ -298,6 +298,21 @@
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.2);
     }
+
+    fieldset.depth-group {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    fieldset.depth-group legend {
+      padding: 0 10px;
+      color: #ddd;
+      font-size: 14px;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -345,7 +360,7 @@
               <th>Floor (m)</th>
               <th>Top (m)</th>
               <th>Max Exp (m)</th>
-              <th>PSI</th>
+              <th>Max PSI</th>
               <th>Notes</th>
             </tr>
           </thead>
@@ -389,25 +404,35 @@
             <datalist id="typeList"></datalist>
           </div>
 
-          <div class="form-group">
-            <label for="poiDepthM">Depth (m)</label>
-            <input type="number" id="poiDepthM" step="any">
-          </div>
+          <fieldset class="form-group full-width depth-group">
+            <legend>Depth Information</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="poiDepthM">Depth (m)</label>
+                <input type="number" id="poiDepthM" step="any">
+              </div>
 
-          <div class="form-group">
-            <label for="poiOceanFloorDepthM">Floor Depth (m)</label>
-            <input type="number" id="poiOceanFloorDepthM" step="any">
-          </div>
+              <div class="form-group">
+                <label for="poiOceanFloorDepthM">Floor Depth (m)</label>
+                <input type="number" id="poiOceanFloorDepthM" step="any">
+              </div>
 
-          <div class="form-group">
-            <label for="poiTopDepthM">Top Depth (m)</label>
-            <input type="number" id="poiTopDepthM" step="any">
-          </div>
+              <div class="form-group">
+                <label for="poiTopDepthM">Top Depth (m)</label>
+                <input type="number" id="poiTopDepthM" step="any">
+              </div>
 
-          <div class="form-group">
-            <label for="poiMaxExploredDepthM">Max Explored (m)</label>
-            <input type="number" id="poiMaxExploredDepthM" step="any">
-          </div>
+              <div class="form-group">
+                <label for="poiMaxExploredDepthM">Max Explored (m)</label>
+                <input type="number" id="poiMaxExploredDepthM" step="any">
+              </div>
+
+              <div class="form-group">
+                <label for="poiMaxPsiReached">Max PSI Reached</label>
+                <input type="number" id="poiMaxPsiReached" step="any">
+              </div>
+            </div>
+          </fieldset>
 
           <div class="form-group">
             <label for="poiBioHostiles">Bio Hostiles</label>
@@ -442,11 +467,6 @@
             <select id="poiBeacon">
               <option value="">Select...</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label for="poiPsi">PSI</label>
-            <input type="number" id="poiPsi" step="any">
           </div>
 
           <div class="form-group full-width">

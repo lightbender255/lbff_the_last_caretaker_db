@@ -118,7 +118,7 @@ function renderPOIs(pois) {
       <td class="editable" data-field="ocean_floor_depth_m">${poi.ocean_floor_depth_m !== null ? poi.ocean_floor_depth_m : '-'}</td>
       <td class="editable" data-field="top_depth_m">${poi.top_depth_m !== null ? poi.top_depth_m : '-'}</td>
       <td class="editable" data-field="max_explored_depth_m">${poi.max_explored_depth_m !== null ? poi.max_explored_depth_m : '-'}</td>
-      <td class="editable" data-field="psi">${poi.psi !== null ? poi.psi : '-'}</td>
+      <td class="editable" data-field="max_psi_reached">${poi.max_psi_reached !== null ? poi.max_psi_reached : '-'}</td>
       <td class="editable" data-field="notes">${escapeHtml(poi.notes || '-')}</td>
     </tr>
   `).join('');
@@ -351,7 +351,10 @@ addPoiForm.addEventListener('submit', async (e) => {
     salvage: document.getElementById('poiSalvage').value || null,
     power: document.getElementById('poiPower').value || null,
     beacon: document.getElementById('poiBeacon').value || null,
-    psi: document.getElementById('poiPsi').value ? parseFloat(document.getElementById('poiPsi').value) : null,
+    salvage: document.getElementById('poiSalvage').value || null,
+    power: document.getElementById('poiPower').value || null,
+    beacon: document.getElementById('poiBeacon').value || null,
+    max_psi_reached: document.getElementById('poiMaxPsiReached').value ? parseFloat(document.getElementById('poiMaxPsiReached').value) : null,
     notes: document.getElementById('poiNotes').value || null
   };
 
