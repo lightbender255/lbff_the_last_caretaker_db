@@ -107,6 +107,9 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    frame: false, // Frameless window
+    transparent: true, // Enable transparency for rounded corners
+    autoHideMenuBar: true, // Hide menu bar
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -123,6 +126,10 @@ function createWindow() {
 }
 
 // IPC Handlers
+ipcMain.handle('close-app', () => {
+  app.quit();
+});
+
 ipcMain.handle('get-all-pois', async () => {
   try {
     const stmt = db.prepare('SELECT rowid as id, * FROM poi ORDER BY name');

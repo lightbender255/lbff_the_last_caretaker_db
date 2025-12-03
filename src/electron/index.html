@@ -6,36 +6,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Last Caretaker - Database Viewer</title>
   <style>
-    * {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+    }
+
+    .app-header h1 {
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      color: #e0e0e0;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      padding: 20px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    h1 {
+      font-size: 24px;
       color: #fff;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-      margin-bottom: 10px;
+    }
+
+    .app-controls {
+      -webkit-app-region: no-drag;
+    }
+
+    #closeAppBtn {
+      background: transparent;
+      color: #aaa;
+      font-size: 24px;
+      padding: 5px 10px;
+      line-height: 1;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #closeAppBtn:hover {
+      color: #fff;
+      background: rgba(255, 0, 0, 0.5);
+      border-radius: 4px;
+    }
+
+    .content-wrapper {
+      padding: 0 20px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
     }
 
     .controls {
@@ -344,58 +356,63 @@
 
 <body>
   <div class="container">
-    <header>
+    <header class="app-header">
       <h1>🗺️ The Last Caretaker - POI Database</h1>
+      <div class="app-controls">
+        <button id="closeAppBtn" title="Close App">&times;</button>
+      </div>
     </header>
 
-    <div class="controls">
-      <input type="search" id="searchInput" placeholder="Search by name, type, or notes...">
-      <select id="typeFilter">
-        <option value="">All Types</option>
-      </select>
-      <button id="clearBtn">Clear</button>
-      <button id="addPoiBtn" style="background-color: #2196F3;">+ Add POI</button>
-    </div>
-
-    <div class="stats">
-      <div class="stat-item">
-        <strong>Total POIs:</strong> <span id="totalCount">0</span>
+    <div class="content-wrapper">
+      <div class="controls">
+        <input type="search" id="searchInput" placeholder="Search by name, type, or notes...">
+        <select id="typeFilter">
+          <option value="">All Types</option>
+        </select>
+        <button id="clearBtn">Clear</button>
+        <button id="addPoiBtn" style="background-color: #2196F3;">+ Add POI</button>
       </div>
-      <div class="stat-item">
-        <strong>Showing:</strong> <span id="showingCount">0</span>
+
+      <div class="stats">
+        <div class="stat-item">
+          <strong>Total POIs:</strong> <span id="totalCount">0</span>
+        </div>
+        <div class="stat-item">
+          <strong>Showing:</strong> <span id="showingCount">0</span>
+        </div>
       </div>
-    </div>
 
-    <div id="errorContainer"></div>
+      <div id="errorContainer"></div>
 
-    <div class="poi-grid">
-      <div class="poi-table-wrapper">
-        <table class="poi-table">
-          <thead>
-            <tr>
-              <th class="sortable" data-sort="name">Name</th>
-              <th class="sortable" data-sort="x">X</th>
-              <th class="sortable" data-sort="y">Y</th>
-              <th class="sortable" data-sort="type">Type</th>
-              <th class="sortable" data-sort="bio_hostiles">Bio Hostiles</th>
-              <th class="sortable" data-sort="mech_hostiles">Mech Hostiles</th>
-              <th class="sortable" data-sort="salvage">Salvage</th>
-              <th class="sortable" data-sort="power">Power</th>
-              <th class="sortable" data-sort="beacon">Beacon</th>
-              <th class="sortable" data-sort="depth_m">Depth (m)</th>
-              <th class="sortable" data-sort="ocean_floor_depth_m">Floor (m)</th>
-              <th class="sortable" data-sort="top_depth_m">Top (m)</th>
-              <th class="sortable" data-sort="max_explored_depth_m">Max Exp (m)</th>
-              <th class="sortable" data-sort="max_psi_reached">Max PSI</th>
-              <th class="sortable" data-sort="notes">Notes</th>
-            </tr>
-          </thead>
-          <tbody id="poiTableBody">
-            <tr>
-              <td colspan="12" class="loading">Click "Load All POIs" to view the database</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="poi-grid">
+        <div class="poi-table-wrapper">
+          <table class="poi-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name">Name</th>
+                <th class="sortable" data-sort="x">X</th>
+                <th class="sortable" data-sort="y">Y</th>
+                <th class="sortable" data-sort="type">Type</th>
+                <th class="sortable" data-sort="bio_hostiles">Bio Hostiles</th>
+                <th class="sortable" data-sort="mech_hostiles">Mech Hostiles</th>
+                <th class="sortable" data-sort="salvage">Salvage</th>
+                <th class="sortable" data-sort="power">Power</th>
+                <th class="sortable" data-sort="beacon">Beacon</th>
+                <th class="sortable" data-sort="depth_m">Depth (m)</th>
+                <th class="sortable" data-sort="ocean_floor_depth_m">Floor (m)</th>
+                <th class="sortable" data-sort="top_depth_m">Top (m)</th>
+                <th class="sortable" data-sort="max_explored_depth_m">Max Exp (m)</th>
+                <th class="sortable" data-sort="max_psi_reached">Max PSI</th>
+                <th class="sortable" data-sort="notes">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="poiTableBody">
+              <tr>
+                <td colspan="12" class="loading">Click "Load All POIs" to view the database</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

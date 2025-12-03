@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('dbAPI', {
   updatePOI: (id, updates) => ipcRenderer.invoke('update-poi', { id, updates }),
   deletePOI: (id) => ipcRenderer.invoke('delete-poi', id),
   getLookupValues: (category) => ipcRenderer.invoke('get-lookup-values', category),
+  closeApp: () => ipcRenderer.invoke('close-app'),
   onDatabaseUpdated: (callback) => ipcRenderer.on('database-updated', callback)
 });

@@ -342,6 +342,7 @@ const deleteConfirmModal = document.getElementById('deleteConfirmModal');
 const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
 const closeDeleteModal = document.querySelector('#deleteConfirmModal .close-modal');
+const closeAppBtn = document.getElementById('closeAppBtn');
 
 let currentEditingId = null;
 
@@ -459,6 +460,13 @@ window.addEventListener('click', (e) => {
 deletePoiBtn.addEventListener('click', openDeleteConfirmModal);
 cancelDeleteBtn.addEventListener('click', closeDeleteConfirmModalFunc);
 closeDeleteModal.addEventListener('click', closeDeleteConfirmModalFunc);
+
+// Close App Flow
+if (closeAppBtn) {
+  closeAppBtn.addEventListener('click', async () => {
+    await window.dbAPI.closeApp();
+  });
+}
 
 confirmDeleteBtn.addEventListener('click', async () => {
   if (currentEditingId) {
