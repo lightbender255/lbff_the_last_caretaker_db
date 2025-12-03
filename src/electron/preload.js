@@ -8,5 +8,8 @@ contextBridge.exposeInMainWorld('dbAPI', {
   searchPOIs: (searchTerm) => ipcRenderer.invoke('search-pois', searchTerm),
   getPOIsByType: (type) => ipcRenderer.invoke('get-pois-by-type', type),
   getPOITypes: () => ipcRenderer.invoke('get-poi-types'),
+  createPOI: (poiData) => ipcRenderer.invoke('create-poi', poiData),
+  updatePOI: (id, updates) => ipcRenderer.invoke('update-poi', { id, updates }),
+  getLookupValues: (category) => ipcRenderer.invoke('get-lookup-values', category),
   onDatabaseUpdated: (callback) => ipcRenderer.on('database-updated', callback)
 });

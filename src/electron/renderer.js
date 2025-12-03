@@ -15,7 +15,7 @@ async function loadAllPOIs() {
   try {
     showLoading();
     const result = await window.dbAPI.getAllPOIs();
-    
+
     if (result.success) {
       allPOIs = result.data;
       filteredPOIs = allPOIs;
@@ -35,7 +35,7 @@ async function loadAllPOIs() {
 async function loadTypeFilter() {
   try {
     const result = await window.dbAPI.getPOITypes();
-    
+
     if (result.success) {
       typeFilter.innerHTML = '<option value="">All Types</option>';
       result.data.forEach(type => {
@@ -60,7 +60,7 @@ async function searchPOIs(searchTerm) {
 
   try {
     const result = await window.dbAPI.searchPOIs(searchTerm);
-    
+
     if (result.success) {
       filteredPOIs = result.data;
       renderPOIs(result.data);
@@ -82,7 +82,7 @@ async function filterByType(type) {
 
   try {
     const result = await window.dbAPI.getPOIsByType(type);
-    
+
     if (result.success) {
       filteredPOIs = result.data;
       renderPOIs(result.data);
@@ -103,23 +103,104 @@ function renderPOIs(pois) {
   }
 
   poiTableBody.innerHTML = pois.map(poi => `
-    <tr>
-      <td><strong>${escapeHtml(poi.name)}</strong></td>
-      <td>${poi.x !== null ? poi.x : '-'}</td>
-      <td>${poi.y !== null ? poi.y : '-'}</td>
-      <td>${escapeHtml(poi.type || '-')}</td>
-      <td>${escapeHtml(poi.bio_hostiles || '-')}</td>
-      <td>${escapeHtml(poi.mech_hostiles || '-')}</td>
-      <td>${escapeHtml(poi.salvage || '-')}</td>
-      <td>${escapeHtml(poi.power || '-')}</td>
-      <td>${escapeHtml(poi.beacon || '-')}</td>
-      <td>${poi.depth !== null ? poi.depth : '-'}</td>
-      <td>${poi.psi !== null ? poi.psi : '-'}</td>
-      <td>${escapeHtml(poi.notes || '-')}</td>
+    <tr data-id="${poi.id}">
+      <td class="editable" data-field="name">${escapeHtml(poi.name)}</td>
+      <td class="editable" data-field="x">${poi.x !== null ? poi.x : '-'}</td>
+      <td class="editable" data-field="y">${poi.y !== null ? poi.y : '-'}</td>
+      <td class="editable" data-field="type">${escapeHtml(poi.type || '-')}</td>
+      <td class="editable" data-field="bio_hostiles">${escapeHtml(poi.bio_hostiles || '-')}</td>
+      <td class="editable" data-field="mech_hostiles">${escapeHtml(poi.mech_hostiles || '-')}</td>
+      <td class="editable" data-field="salvage">${escapeHtml(poi.salvage || '-')}</td>
+      <td class="editable" data-field="power">${escapeHtml(poi.power || '-')}</td>
+      <td class="editable" data-field="beacon">${escapeHtml(poi.beacon || '-')}</td>
+      <td class="editable" data-field="beacon">${escapeHtml(poi.beacon || '-')}</td>
+      <td class="editable" data-field="depth_m">${poi.depth_m !== null ? poi.depth_m : '-'}</td>
+      <td class="editable" data-field="ocean_floor_depth_m">${poi.ocean_floor_depth_m !== null ? poi.ocean_floor_depth_m : '-'}</td>
+      <td class="editable" data-field="top_depth_m">${poi.top_depth_m !== null ? poi.top_depth_m : '-'}</td>
+      <td class="editable" data-field="max_explored_depth_m">${poi.max_explored_depth_m !== null ? poi.max_explored_depth_m : '-'}</td>
+      <td class="editable" data-field="psi">${poi.psi !== null ? poi.psi : '-'}</td>
+      <td class="editable" data-field="notes">${escapeHtml(poi.notes || '-')}</td>
     </tr>
   `).join('');
 
   showingCount.textContent = pois.length;
+  attachEditListeners();
+}
+
+function attachEditListeners() {
+  document.querySelectorAll('.editable').forEach(cell => {
+    cell.addEventListener('dblclick', handleCellEdit);
+  });
+}
+
+function handleCellEdit(e) {
+  const cell = e.target;
+  if (cell.classList.contains('editing')) return;
+
+  const currentText = cell.innerText === '-' ? '' : cell.innerText;
+  const originalContent = cell.innerHTML;
+
+  cell.classList.add('editing');
+  cell.contentEditable = true;
+  cell.focus();
+
+  // Select all text
+  document.execCommand('selectAll', false, null);
+
+  const save = async () => {
+    cell.contentEditable = false;
+    cell.classList.remove('editing');
+    const newText = cell.innerText.trim();
+    const newValue = newText === '' ? null : newText;
+
+    // Restore original if no change (simple check)
+    if (newText === currentText) {
+      cell.innerHTML = originalContent; // Restore to keep formatting/escaping if needed
+      return;
+    }
+
+    const id = cell.parentElement.dataset.id;
+    const field = cell.dataset.field;
+
+    try {
+      const result = await window.dbAPI.updatePOI(id, { [field]: newValue });
+      if (result.success) {
+        // Flash green
+        cell.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
+        setTimeout(() => cell.style.backgroundColor = '', 1000);
+        // Update data in local array if needed, or just reload
+        loadAllPOIs();
+      } else {
+        showError(`Update failed: ${result.error}`);
+        cell.innerHTML = originalContent;
+      }
+    } catch (error) {
+      showError(`Error: ${error.message}`);
+      cell.innerHTML = originalContent;
+    }
+  };
+
+  const handleBlur = () => {
+    save();
+    cell.removeEventListener('blur', handleBlur);
+    cell.removeEventListener('keydown', handleKeydown);
+  };
+
+  const handleKeydown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      cell.blur();
+    } else if (e.key === 'Escape') {
+      cell.contentEditable = false;
+      cell.classList.remove('editing');
+      cell.innerHTML = originalContent;
+      cell.removeEventListener('blur', handleBlur);
+      cell.removeEventListener('keydown', handleKeydown);
+    }
+  };
+
+  cell.addEventListener('blur', handleBlur);
+  cell.addEventListener('keydown', handleKeydown);
 }
 
 // Show loading message
@@ -171,10 +252,120 @@ typeFilter.addEventListener('change', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   console.log('Database Viewer Ready');
   loadAllPOIs();
-  
+
   // Listen for database updates
   window.dbAPI.onDatabaseUpdated(() => {
     console.log('Database updated externally, refreshing...');
     loadAllPOIs();
   });
+});
+
+// Modal Elements
+const addPoiModal = document.getElementById('addPoiModal');
+const addPoiBtn = document.getElementById('addPoiBtn');
+const closeAddModal = document.querySelector('#addPoiModal .close-modal');
+const cancelAddBtn = document.getElementById('cancelAddBtn');
+const addPoiForm = document.getElementById('addPoiForm');
+const typeList = document.getElementById('typeList');
+
+// Modal Functions
+async function openAddModal() {
+  addPoiModal.style.display = 'flex';
+
+  // Helper to populate select
+  const populateSelect = async (elementId, category) => {
+    const select = document.getElementById(elementId);
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Select...</option>';
+    try {
+      const result = await window.dbAPI.getLookupValues(category);
+      if (result.success) {
+        result.data.forEach(val => {
+          const option = document.createElement('option');
+          option.value = val;
+          option.textContent = val;
+          select.appendChild(option);
+        });
+      }
+    } catch (e) {
+      console.error(`Error populating ${category}:`, e);
+    }
+  };
+
+  // Populate all dropdowns
+  await Promise.all([
+    populateSelect('typeList', 'Type'), // Note: typeList is a datalist, handled separately below if needed, but keeping existing logic for now
+    populateSelect('poiBioHostiles', 'Bio Hostiles'),
+    populateSelect('poiMechHostiles', 'Mech Hostiles'),
+    populateSelect('poiSalvage', 'Salvage'),
+    populateSelect('poiPower', 'Power'),
+    populateSelect('poiBeacon', 'Beacon')
+  ]);
+
+  // Populate type datalist (keeping existing logic for Type as it allows custom values)
+  window.dbAPI.getPOITypes().then(result => {
+    if (result.success) {
+      typeList.innerHTML = '';
+      result.data.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        typeList.appendChild(option);
+      });
+    }
+  });
+}
+
+function closeAddModalFunc() {
+  addPoiModal.style.display = 'none';
+  addPoiForm.reset();
+}
+
+// Add POI Event Listeners
+addPoiBtn.addEventListener('click', openAddModal);
+closeAddModal.addEventListener('click', closeAddModalFunc);
+cancelAddBtn.addEventListener('click', closeAddModalFunc);
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target === addPoiModal) {
+    closeAddModalFunc();
+  }
+});
+
+// Handle Form Submission
+addPoiForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const formData = {
+    name: document.getElementById('poiName').value,
+    x: document.getElementById('poiX').value ? parseFloat(document.getElementById('poiX').value) : null,
+    y: document.getElementById('poiY').value ? parseFloat(document.getElementById('poiY').value) : null,
+    type: document.getElementById('poiType').value || null,
+    depth_m: document.getElementById('poiDepthM').value ? parseFloat(document.getElementById('poiDepthM').value) : null,
+    ocean_floor_depth_m: document.getElementById('poiOceanFloorDepthM').value ? parseFloat(document.getElementById('poiOceanFloorDepthM').value) : null,
+    top_depth_m: document.getElementById('poiTopDepthM').value ? parseFloat(document.getElementById('poiTopDepthM').value) : null,
+    max_explored_depth_m: document.getElementById('poiMaxExploredDepthM').value ? parseFloat(document.getElementById('poiMaxExploredDepthM').value) : null,
+    bio_hostiles: document.getElementById('poiBioHostiles').value || null,
+    mech_hostiles: document.getElementById('poiMechHostiles').value || null,
+    salvage: document.getElementById('poiSalvage').value || null,
+    power: document.getElementById('poiPower').value || null,
+    beacon: document.getElementById('poiBeacon').value || null,
+    psi: document.getElementById('poiPsi').value ? parseFloat(document.getElementById('poiPsi').value) : null,
+    notes: document.getElementById('poiNotes').value || null
+  };
+
+  try {
+    const result = await window.dbAPI.createPOI(formData);
+
+    if (result.success) {
+      closeAddModalFunc();
+      loadAllPOIs(); // Refresh grid
+      // Optional: Show success message
+    } else {
+      alert(`Failed to create POI: ${result.error}`);
+    }
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
 });

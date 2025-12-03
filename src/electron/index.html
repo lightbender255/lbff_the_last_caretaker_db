@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,7 +34,7 @@
 
     h1 {
       color: #fff;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       margin-bottom: 10px;
     }
 
@@ -44,13 +45,14 @@
       flex-wrap: wrap;
     }
 
-    input[type="search"], select {
+    input[type="search"],
+    select {
       flex: 1;
       min-width: 200px;
       padding: 10px 15px;
       border: none;
       border-radius: 5px;
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       color: #fff;
       font-size: 14px;
     }
@@ -61,7 +63,7 @@
     }
 
     input[type="search"]::placeholder {
-      color: rgba(255,255,255,0.6);
+      color: rgba(255, 255, 255, 0.6);
     }
 
     button {
@@ -87,7 +89,7 @@
     }
 
     .stat-item {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       padding: 10px 15px;
       border-radius: 5px;
     }
@@ -95,7 +97,7 @@
     .poi-grid {
       flex: 1;
       overflow: hidden;
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
       border-radius: 10px;
       padding: 15px;
       display: flex;
@@ -113,23 +115,44 @@
     }
 
     .poi-table th {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(10px);
       padding: 12px;
       text-align: left;
       position: sticky;
       top: 0;
       z-index: 10;
-      border-bottom: 2px solid rgba(255,255,255,0.2);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
     }
 
     .poi-table td {
       padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .poi-table tr:hover {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .editable {
+      cursor: pointer;
+      position: relative;
+    }
+
+    .editable:hover {
+      background: rgba(255, 255, 255, 0.1);
+      outline: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .editing {
+      background: rgba(0, 0, 0, 0.5) !important;
+      outline: 2px solid #4CAF50;
+      cursor: text;
+      padding: 0 !important;
+    }
+
+    .editing:focus {
+      outline: 2px solid #4CAF50;
     }
 
     .loading {
@@ -139,7 +162,7 @@
     }
 
     .error {
-      background: rgba(255,0,0,0.2);
+      background: rgba(255, 0, 0, 0.2);
       padding: 15px;
       border-radius: 5px;
       margin-bottom: 20px;
@@ -151,20 +174,133 @@
     }
 
     ::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
       border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.3);
+      background: rgba(255, 255, 255, 0.3);
       border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.4);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #2a5298;
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+    }
+
+    .modal-header h2 {
+      color: #fff;
+      margin: 0;
+    }
+
+    .close-modal {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .close-modal:hover {
+      color: #fff;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #ddd;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.2);
+      color: #fff;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 20px;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -177,6 +313,7 @@
         <option value="">All Types</option>
       </select>
       <button id="clearBtn">Clear</button>
+      <button id="addPoiBtn" style="background-color: #2196F3;">+ Add POI</button>
     </div>
 
     <div class="stats">
@@ -204,7 +341,10 @@
               <th>Salvage</th>
               <th>Power</th>
               <th>Beacon</th>
-              <th>Depth</th>
+              <th>Depth (m)</th>
+              <th>Floor (m)</th>
+              <th>Top (m)</th>
+              <th>Max Exp (m)</th>
               <th>PSI</th>
               <th>Notes</th>
             </tr>
@@ -219,6 +359,111 @@
     </div>
   </div>
 
+  <!-- Add POI Modal -->
+  <div id="addPoiModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New POI</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <form id="addPoiForm">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="poiName">Name *</label>
+            <input type="text" id="poiName" required>
+          </div>
+
+          <div class="form-group">
+            <label for="poiX">X Coordinate</label>
+            <input type="number" id="poiX" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiY">Y Coordinate</label>
+            <input type="number" id="poiY" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiType">Type</label>
+            <input type="text" id="poiType" list="typeList">
+            <datalist id="typeList"></datalist>
+          </div>
+
+          <div class="form-group">
+            <label for="poiDepthM">Depth (m)</label>
+            <input type="number" id="poiDepthM" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiOceanFloorDepthM">Floor Depth (m)</label>
+            <input type="number" id="poiOceanFloorDepthM" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiTopDepthM">Top Depth (m)</label>
+            <input type="number" id="poiTopDepthM" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiMaxExploredDepthM">Max Explored (m)</label>
+            <input type="number" id="poiMaxExploredDepthM" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiBioHostiles">Bio Hostiles</label>
+            <select id="poiBioHostiles">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiMechHostiles">Mech Hostiles</label>
+            <select id="poiMechHostiles">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiSalvage">Salvage</label>
+            <select id="poiSalvage">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiPower">Power</label>
+            <select id="poiPower">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiBeacon">Beacon</label>
+            <select id="poiBeacon">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiPsi">PSI</label>
+            <input type="number" id="poiPsi" step="any">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="poiNotes">Notes</label>
+            <textarea id="poiNotes" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelAddBtn">Cancel</button>
+          <button type="submit">Save POI</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="renderer.js"></script>
 </body>
+
 </html>
