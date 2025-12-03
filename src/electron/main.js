@@ -109,6 +109,7 @@ function createWindow() {
     height: 800,
     frame: false, // Frameless window
     transparent: true, // Enable transparency for rounded corners
+    backgroundColor: '#00000000', // Ensure completely transparent background
     autoHideMenuBar: true, // Hide menu bar
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
