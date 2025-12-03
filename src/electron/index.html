@@ -134,6 +134,32 @@
       background: rgba(255, 255, 255, 0.05);
     }
 
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th.sortable:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    th.sortable::after {
+      content: '↕';
+      position: absolute;
+      right: 8px;
+      opacity: 0.3;
+    }
+
+    th.sort-asc::after {
+      content: '↑';
+      opacity: 1;
+    }
+
+    th.sort-desc::after {
+      content: '↓';
+      opacity: 1;
+    }
+
     .editable {
       cursor: pointer;
       position: relative;
@@ -347,21 +373,21 @@
         <table class="poi-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>X</th>
-              <th>Y</th>
-              <th>Type</th>
-              <th>Bio Hostiles</th>
-              <th>Mech Hostiles</th>
-              <th>Salvage</th>
-              <th>Power</th>
-              <th>Beacon</th>
-              <th>Depth (m)</th>
-              <th>Floor (m)</th>
-              <th>Top (m)</th>
-              <th>Max Exp (m)</th>
-              <th>Max PSI</th>
-              <th>Notes</th>
+              <th class="sortable" data-sort="name">Name</th>
+              <th class="sortable" data-sort="x">X</th>
+              <th class="sortable" data-sort="y">Y</th>
+              <th class="sortable" data-sort="type">Type</th>
+              <th class="sortable" data-sort="bio_hostiles">Bio Hostiles</th>
+              <th class="sortable" data-sort="mech_hostiles">Mech Hostiles</th>
+              <th class="sortable" data-sort="salvage">Salvage</th>
+              <th class="sortable" data-sort="power">Power</th>
+              <th class="sortable" data-sort="beacon">Beacon</th>
+              <th class="sortable" data-sort="depth_m">Depth (m)</th>
+              <th class="sortable" data-sort="ocean_floor_depth_m">Floor (m)</th>
+              <th class="sortable" data-sort="top_depth_m">Top (m)</th>
+              <th class="sortable" data-sort="max_explored_depth_m">Max Exp (m)</th>
+              <th class="sortable" data-sort="max_psi_reached">Max PSI</th>
+              <th class="sortable" data-sort="notes">Notes</th>
             </tr>
           </thead>
           <tbody id="poiTableBody">

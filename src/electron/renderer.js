@@ -1,5 +1,7 @@
 let allPOIs = [];
 let filteredPOIs = [];
+let currentSortField = null;
+let currentSortDirection = 'asc';
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
@@ -94,6 +96,50 @@ async function filterByType(type) {
   }
 }
 
+// Sort POIs
+function sortPOIs(field) {
+  if (currentSortField === field) {
+    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSortField = field;
+    currentSortDirection = 'asc';
+  }
+
+  // Update header UI
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === field) {
+      th.classList.add(`sort-${currentSortDirection}`);
+    }
+  });
+
+  // Sort data
+  filteredPOIs.sort((a, b) => {
+    let valA = a[field];
+    let valB = b[field];
+
+    // Handle nulls (always at bottom)
+    if (valA === null && valB === null) return 0;
+    if (valA === null) return 1;
+    if (valB === null) return -1;
+
+    // Numeric sort
+    if (typeof valA === 'number' && typeof valB === 'number') {
+      return currentSortDirection === 'asc' ? valA - valB : valB - valA;
+    }
+
+    // String sort
+    valA = String(valA).toLowerCase();
+    valB = String(valB).toLowerCase();
+
+    if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+    if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  renderPOIs(filteredPOIs);
+}
+
 // Render POIs in table
 function renderPOIs(pois) {
   if (pois.length === 0) {
@@ -112,7 +158,6 @@ function renderPOIs(pois) {
       <td class="editable" data-field="mech_hostiles">${escapeHtml(poi.mech_hostiles || '-')}</td>
       <td class="editable" data-field="salvage">${escapeHtml(poi.salvage || '-')}</td>
       <td class="editable" data-field="power">${escapeHtml(poi.power || '-')}</td>
-      <td class="editable" data-field="beacon">${escapeHtml(poi.beacon || '-')}</td>
       <td class="editable" data-field="beacon">${escapeHtml(poi.beacon || '-')}</td>
       <td class="editable" data-field="depth_m">${poi.depth_m !== null ? poi.depth_m : '-'}</td>
       <td class="editable" data-field="ocean_floor_depth_m">${poi.ocean_floor_depth_m !== null ? poi.ocean_floor_depth_m : '-'}</td>
@@ -258,6 +303,16 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log('Database updated externally, refreshing...');
     loadAllPOIs();
   });
+
+  // Sort Event Listeners
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const field = th.dataset.sort;
+      if (field) {
+        sortPOIs(field);
+      }
+    });
+  });
 });
 
 // Modal Elements
@@ -348,9 +403,6 @@ addPoiForm.addEventListener('submit', async (e) => {
     max_explored_depth_m: document.getElementById('poiMaxExploredDepthM').value ? parseFloat(document.getElementById('poiMaxExploredDepthM').value) : null,
     bio_hostiles: document.getElementById('poiBioHostiles').value || null,
     mech_hostiles: document.getElementById('poiMechHostiles').value || null,
-    salvage: document.getElementById('poiSalvage').value || null,
-    power: document.getElementById('poiPower').value || null,
-    beacon: document.getElementById('poiBeacon').value || null,
     salvage: document.getElementById('poiSalvage').value || null,
     power: document.getElementById('poiPower').value || null,
     beacon: document.getElementById('poiBeacon').value || null,
