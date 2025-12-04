@@ -1,7 +1,7 @@
 {
   "name": "lbff-the-last-caretaker-db",
   "version": "1.0.0",
-  "description": "The Last Caretaker Database Viewer",
+  "description": "Lightbender's The Last Caretaker POI Tracker",
   "main": "src/electron/main.js",
   "scripts": {
     "start": "electron .",
@@ -9,8 +9,9 @@
     "dist": "electron-builder"
   },
   "build": {
-    "appId": "ca.lightbender255.lbff-db-viewer",
-    "productName": "LBFF DB Viewer",
+    "appId": "ca.lightbender255.lbff-tlc-poi-tracker",
+    "productName": "The Last Caretaker POI Tracker",
+
     "directories": {
       "output": "dist"
     },
@@ -23,16 +24,17 @@
     },
     "linux": {
       "target": [
-        "AppImage",
         "deb"
       ],
-      "category": "Utility"
+      "category": "Game Tools"
     }
   },
   "keywords": [
     "electron",
     "sqlite",
-    "database"
+    "database",
+    "game",
+    "tools"
   ],
   "author": {
     "name": "lightbender255",
