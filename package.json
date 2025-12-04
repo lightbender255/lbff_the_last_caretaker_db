@@ -34,7 +34,10 @@
     "sqlite",
     "database"
   ],
-  "author": "lightbender255",
+  "author": {
+    "name": "lightbender255",
+    "email": "lightbender255@gmail.com"
+  },
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
