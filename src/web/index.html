@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Last Caretaker - Database Viewer</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="app-header">
+      <h1>POI Database - The Last Caretaker</h1>
+      <div class="auth-controls">
+        <button id="signOutBtn" style="display: none;">Sign Out</button>
+        <div id="authForm" class="auth-form">
+          <input type="email" id="email" placeholder="Email" autocomplete="off">
+          <input type="password" id="password" placeholder="Password" autocomplete="off">
+          <button id="toggleAuthBtn">Sign In</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-wrapper" id="mainContent" style="display: none;">
+      <div class="controls">
+        <input type="search" id="searchInput" placeholder="Search by name, type, or notes...">
+        <select id="typeFilter">
+          <option value="">All Types</option>
+        </select>
+        <button id="clearBtn">Clear</button>
+        <button id="addPoiBtn" style="background-color: #2196F3;">+ Add POI</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <strong>Total POIs:</strong> <span id="totalCount">0</span>
+        </div>
+        <div class="stat-item">
+          <strong>Showing:</strong> <span id="showingCount">0</span>
+        </div>
+      </div>
+
+      <div id="errorContainer"></div>
+
+      <div class="poi-grid">
+        <div class="poi-table-wrapper">
+          <table class="poi-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name">Name</th>
+                <th class="sortable" data-sort="x">X</th>
+                <th class="sortable" data-sort="y">Y</th>
+                <th class="sortable" data-sort="type">Type</th>
+                <th class="sortable" data-sort="bio_hostiles">Bio Hostiles</th>
+                <th class="sortable" data-sort="mech_hostiles">Mech Hostiles</th>
+                <th class="sortable" data-sort="salvage">Salvage</th>
+                <th class="sortable" data-sort="power">Power</th>
+                <th class="sortable" data-sort="beacon">Beacon</th>
+                <th class="sortable" data-sort="depth_m">Depth (m)</th>
+                <th class="sortable" data-sort="ocean_floor_depth_m">Floor (m)</th>
+                <th class="sortable" data-sort="top_depth_m">Top (m)</th>
+                <th class="sortable" data-sort="max_explored_depth_m">Max Exp (m)</th>
+                <th class="sortable" data-sort="max_psi_reached">Max PSI</th>
+                <th class="sortable" data-sort="notes">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="poiTableBody">
+              <tr>
+                <td colspan="15" class="loading">Loading POIs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="addPoiModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New POI</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <form id="addPoiForm">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="poiName">Name *</label>
+            <input type="text" id="poiName" required>
+          </div>
+
+          <div class="form-group">
+            <label for="poiX">X Coordinate</label>
+            <input type="number" id="poiX" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiY">Y Coordinate</label>
+            <input type="number" id="poiY" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="poiType">Type</label>
+            <input type="text" id="poiType" list="typeList">
+            <datalist id="typeList"></datalist>
+          </div>
+
+          <fieldset class="form-group full-width depth-group">
+            <legend>Depth Information</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="poiDepthM">Depth (m)</label>
+                <input type="number" id="poiDepthM" step="any">
+              </div>
+
+              <div class="form-group">
+                <label for="poiOceanFloorDepthM">Floor Depth (m)</label>
+                <input type="number" id="poiOceanFloorDepthM" step="any">
+              </div>
+
+              <div class="form-group">
+                <label for="poiTopDepthM">Top Depth (m)</label>
+                <input type="number" id="poiTopDepthM" step="any">
+              </div>
+
+              <div class="form-group">
+                <label for="poiMaxExploredDepthM">Max Explored (m)</label>
+                <input type="number" id="poiMaxExploredDepthM" step="any">
+              </div>
+
+              <div class="form-group">
+                <label for="poiMaxPsiReached">Max PSI Reached</label>
+                <input type="number" id="poiMaxPsiReached" step="any">
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="form-group">
+            <label for="poiBioHostiles">Bio Hostiles</label>
+            <select id="poiBioHostiles">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiMechHostiles">Mech Hostiles</label>
+            <select id="poiMechHostiles">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiSalvage">Salvage</label>
+            <select id="poiSalvage">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiPower">Power</label>
+            <select id="poiPower">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="poiBeacon">Beacon</label>
+            <select id="poiBeacon">
+              <option value="">Select...</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="poiNotes">Notes</label>
+            <textarea id="poiNotes" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="deletePoiBtn" style="background-color: #f44336; margin-right: auto; display: none;">Delete POI</button>
+          <button type="button" class="btn-secondary" id="cancelAddBtn">Cancel</button>
+          <button type="submit">Save POI</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="deleteConfirmModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <span class="close-modal">&times;</span>
+      </div>
+      <p style="margin: 20px 0;">Are you sure you want to delete this POI? This action cannot be undone.</p>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" id="confirmDeleteBtn" style="background-color: #f44336;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
