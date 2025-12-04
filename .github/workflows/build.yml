@@ -39,3 +39,14 @@ jobs:
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-artifacts
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.msi
+            dist/*.exe
+          if-no-files-found: warn
