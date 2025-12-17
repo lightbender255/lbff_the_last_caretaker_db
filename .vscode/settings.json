@@ -1,12 +1,15 @@
 {
-    "sqltools.connections": [
-        {
-            "previewLimit": 50,
-            "driver": "SQLite",
-            "name": "TLC",
-            "group": "SQLite",
-            "database": "./data/the_last_caretaker.db"
-        }
+    "name": "Debug Electron Main",
+    "type": "node-terminal",
+    "request": "launch",
+    "cwd": "${workspaceFolder}",
+    "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+    "windows": {
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+    },
+    "args": [
+        ".",
+        "--dev"
     ],
-    "sqltools.useNodeRuntime": true
+    "console": "integratedTerminal"
 }
