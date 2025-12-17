@@ -176,6 +176,17 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
+    /* Name column should be a pointer (triggers modal) */
+    .poi-table td[data-field="name"] {
+      cursor: pointer;
+      font-weight: bold;
+      /* Optional: make it look more like a primary link */
+    }
+
+    .poi-table td[data-field="name"]:hover {
+      text-decoration: underline;
+    }
+
     .poi-table tr:hover {
       background: rgba(255, 255, 255, 0.05);
     }

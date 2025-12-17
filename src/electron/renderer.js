@@ -153,7 +153,7 @@ function renderPOIs(pois) {
     const row = document.createElement('tr');
     row.dataset.id = poi.id;
     row.innerHTML = `
-      <td class="editable" data-field="name">${escapeHtml(poi.name)}</td>
+      <td data-field="name">${escapeHtml(poi.name)}</td>
       <td class="editable" data-field="x">${poi.x !== null ? poi.x : '-'}</td>
       <td class="editable" data-field="y">${poi.y !== null ? poi.y : '-'}</td>
       <td class="editable" data-field="type">${escapeHtml(poi.type || '-')}</td>
@@ -184,16 +184,17 @@ function renderPOIs(pois) {
   });
 
   showingCount.textContent = pois.length;
-  // attachEditListeners(); // Inline editing might conflict, disabling for now as per "click on row should open details modal"
+  attachEditListeners();
 }
 
 function attachEditListeners() {
   document.querySelectorAll('.editable').forEach(cell => {
-    cell.addEventListener('dblclick', handleCellEdit);
+    cell.addEventListener('click', handleCellEdit);
   });
 }
 
 function handleCellEdit(e) {
+  e.stopPropagation();
   const cell = e.target;
   if (cell.classList.contains('editing')) return;
 
@@ -221,9 +222,22 @@ function handleCellEdit(e) {
 
     const id = cell.parentElement.dataset.id;
     const field = cell.dataset.field;
+    let typedValue = newValue;
+
+    // Type conversion for numeric fields
+    if (['x', 'y', 'depth_m', 'ocean_floor_depth_m', 'top_depth_m', 'max_explored_depth_m', 'max_psi_reached'].includes(field)) {
+      typedValue = newValue === null ? null : parseInt(newValue, 10);
+      if (newValue !== null && isNaN(typedValue)) {
+        alert('Invalid number');
+        cell.innerHTML = originalContent;
+        return;
+      }
+    }
 
     try {
-      const result = await window.dbAPI.updatePOI(id, { [field]: newValue });
+      // Use parseInt on the ID because it is an Int in the schema, but dataset.id is string
+      const idInt = parseInt(id, 10);
+      const result = await window.dbAPI.updatePOI(idInt, { [field]: typedValue });
       if (result.success) {
         // Flash green
         cell.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
