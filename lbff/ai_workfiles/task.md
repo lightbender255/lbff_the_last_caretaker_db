@@ -1,0 +1,25 @@
+# Task List
+
+- [x] Analyze existing project structure
+- [x] Plan Prisma integration
+- [x] Install Prisma and dependencies
+- [x] Configure Prisma Schemas
+  - [x] Local SQLite (`data/schema.local.prisma`)
+  - [x] Remote Postgres (`data/schema.remote.prisma`)
+- [x] Generate Prisma Clients
+- [x] Migrate Data
+  - [x] Create migration script (`scripts/migrate_sqljs_to_prisma.js`)
+  - [x] Run migration
+- [x] Refactor Application
+  - [x] Create `db.js` module
+  - [x] Update `main.js` to use Prisma
+- [x] Implement Synchronization
+  - [x] Create manual sync script (`scripts/sync.js`)
+  - [x] Implement Background Sync in `main.js` (Create/Update/Delete)
+  - [x] Implement Startup Sync (`syncAll`)
+- [x] Verification
+  - [x] Verify local database access
+  - [x] Verify remote connection
+  - [x] Test background sync flow (`scripts/test_sync_flow.js`)
+  - [x] Test offline recovery (`scripts/test_offline_recovery.js`)
+- [x] Archive Workfiles

@@ -11,7 +11,6 @@
   "build": {
     "appId": "ca.lightbender255.lbff-tlc-poi-tracker",
     "productName": "The Last Caretaker POI Tracker",
-
     "directories": {
       "output": "dist"
     },
@@ -42,9 +41,14 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "electron-reload": "^2.0.0-alpha.1",
+    "prisma": "^5.22.0",
     "vite": "^5.0.0"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "@supabase/supabase-js": "^2.38.0",
     "sql.js": "^1.13.0"
   }
