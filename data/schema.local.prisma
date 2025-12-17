@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client-local"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./the_last_caretaker_prisma.db"
+}
+
+model Poi {
+  id                   Int     @id @default(autoincrement())
+  name                 String
+  x                    Int?
+  y                    Int?
+  type                 String?
+  bio_hostiles         String?
+  mech_hostiles        String?
+  salvage              String?
+  power                String?
+  beacon               String?
+  depth_m              Int?
+  ocean_floor_depth_m  Int?
+  top_depth_m          Int?
+  max_explored_depth_m Int?
+  max_psi_reached      Int?
+  notes                String?
+
+  @@map("poi")
+}
+
+model LookupValue {
+  id       Int    @id @default(autoincrement())
+  category String
+  value    String
+
+  @@map("lookup_values")
+}
