@@ -208,83 +208,217 @@ function handleCellEdit(e) {
 
   const currentText = cell.innerText === '-' ? '' : cell.innerText;
   const originalContent = cell.innerHTML;
+  cell.setAttribute('data-original-text', cell.textContent.trim());
 
-  cell.classList.add('editing');
-  cell.contentEditable = true;
-  cell.focus();
+  let isSaving = false;
 
-  // Select all text
-  document.execCommand('selectAll', false, null);
+  const validate = (text) => {
+    const field = cell.dataset.field;
+    if (NUMERIC_POI_FIELDS.includes(field)) {
+      const newValue = text.trim();
+      if (newValue !== '' && newValue !== '-') {
+        const numberRegex = /^-?\d+(\.\d+)?$/;
+        if (!numberRegex.test(newValue)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
 
   const save = async () => {
-    cell.contentEditable = false;
-    cell.classList.remove('editing');
-    const newText = cell.innerText.trim();
+    if (isSaving) return false;
+    isSaving = true;
+
+    const newText = cell.textContent.trim();
     const newValue = newText === '' ? null : newText;
 
-    // Restore original if no change (simple check)
-    if (newText === currentText) {
-      cell.innerHTML = originalContent; // Restore to keep formatting/escaping if needed
-      return;
+    // Check validation first
+    if (!validate(newText)) {
+      inlineError.textContent = 'Error: Invalid number. Valid: 123.07';
+      cell.style.outline = '2px solid red';
+      // DO NOT restore content, DO NOT exit edit mode
+      isSaving = false;
+      return false; // Validation Failed
+    }
+
+    // If we are just closing without change (and it's valid)
+    if (newText === cell.getAttribute('data-original-text')) {
+      cell.style.outline = ''; // Clear any previous error outline
+      cell.contentEditable = false;
+      cell.classList.remove('editing');
+      cell.innerHTML = originalContent;
+      cleanup();
+      isSaving = false;
+      return true;
     }
 
     const id = cell.parentElement.dataset.id;
     const field = cell.dataset.field;
     let typedValue = newValue;
 
-    // Type conversion for numeric fields
     if (NUMERIC_POI_FIELDS.includes(field)) {
       typedValue = newValue === null ? null : parseFloat(newValue);
-      if (newValue !== null && isNaN(typedValue)) {
-        // Show error UI
-        inlineError.textContent = 'Error: Invalid number. Valid: 123.07';
-        cell.style.outline = '2px solid red';
-        cell.innerHTML = originalContent;
-        return;
-      }
     }
 
     try {
-      // Use parseInt on the ID because it is an Int in the schema, but dataset.id is string
       const idInt = parseInt(id, 10);
       const result = await window.dbAPI.updatePOI(idInt, { [field]: typedValue });
       if (result.success) {
-        // Flash green
         cell.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
         setTimeout(() => cell.style.backgroundColor = '', 1000);
         inlineError.textContent = '';
-        // Update data in local array if needed, or just reload
+        cell.style.outline = ''; // Clear error border on success
+
+        cell.contentEditable = false;
+        cell.classList.remove('editing');
+        cleanup();
         loadAllPOIs();
+        isSaving = false;
+        return true;
       } else {
         inlineError.textContent = `Update failed: ${result.error}`;
         cell.style.outline = '2px solid red';
+        // Database error - maybe restore? Or keep for retry?
+        // Let's restore for DB error as it might be system issue
         cell.innerHTML = originalContent;
+        cell.contentEditable = false;
+        cell.classList.remove('editing');
+        cleanup();
+        isSaving = false;
+        return false;
       }
     } catch (error) {
       inlineError.textContent = `Error: ${error.message}`;
       cell.style.outline = '2px solid red';
       cell.innerHTML = originalContent;
+      cell.contentEditable = false;
+      cell.classList.remove('editing');
+      cleanup();
+      isSaving = false;
+      return false;
     }
   };
 
-  const handleBlur = () => {
-    save();
+  const cleanup = () => {
     cell.removeEventListener('blur', handleBlur);
     cell.removeEventListener('keydown', handleKeydown);
   };
 
-  const handleKeydown = (e) => {
-    if (e.key === 'Enter') {
+  const handleBlur = (e) => {
+    // If focused back quickly (e.g. from nav), we might not want to blur?
+    // Check if valid using sync check
+    const valid = validate(cell.textContent.trim());
+    if (!valid) {
+      inlineError.textContent = 'Error: Invalid number. Valid: 123.07';
+      cell.style.outline = '2px solid red';
+      // Force focus back
+      // We need a slight delay to override browser focus move
+      setTimeout(() => {
+        if (cell.isConnected) cell.focus();
+      }, 10);
+      return;
+    }
+
+    // Delegate to save mechanism
+    save();
+  };
+
+  const handleKeydown = async (e) => {
+    // Navigation keys
+    if (['Enter', 'Tab', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+      // Allow default Tab behavior if modifier keys (other than Shift) are pressed
+      if (e.key === 'Tab' && (e.ctrlKey || e.altKey || e.metaKey)) return;
+
       e.preventDefault();
-      cell.blur();
-    } else if (e.key === 'Escape') {
+
+      // Attempt Save/Validate
+      // First check sync validation to separate UI feedback
+      if (!validate(cell.textContent.trim())) {
+        inlineError.textContent = 'Error: Invalid number. Valid: 123.07';
+        cell.style.outline = '2px solid red';
+        // Block navigation
+        return;
+      }
+
+      // Proceed to save
+      // note: save() is async. We wait.
+      const saved = await save();
+      if (!saved) return; // DB error or something blocked
+
+      // Navigation Logic
+      const currentRow = cell.parentElement;
+      let target = null;
+      // ... same nav logic as before ...
+      if (e.key === 'Enter') {
+        const nextRow = currentRow.nextElementSibling;
+        if (nextRow) target = nextRow.querySelector('.editable');
+      } else if (e.key === 'ArrowDown') {
+        const nextRow = currentRow.nextElementSibling;
+        if (nextRow) target = nextRow.children[cell.cellIndex];
+      } else if (e.key === 'ArrowUp') {
+        const prevRow = currentRow.previousElementSibling;
+        if (prevRow) target = prevRow.children[cell.cellIndex];
+      } else {
+        const isNext = (e.key === 'Tab' && !e.shiftKey) || e.key === 'ArrowRight';
+        const isForwardTab = e.key === 'Tab' && !e.shiftKey;
+        let currentProbe = cell;
+        while (true) {
+          if (isNext) {
+            let next = currentProbe.nextElementSibling;
+            if (!next) {
+              const nextRow = currentProbe.parentElement.nextElementSibling;
+              if (!nextRow) break;
+              next = nextRow.firstElementChild;
+            }
+            currentProbe = next;
+          } else {
+            let prev = currentProbe.previousElementSibling;
+            if (!prev) {
+              const prevRow = currentProbe.parentElement.previousElementSibling;
+              if (!prevRow) break;
+              prev = prevRow.lastElementChild;
+            }
+            currentProbe = prev;
+          }
+          if (currentProbe && currentProbe.classList.contains('editable')) {
+            if (isForwardTab) {
+              const text = currentProbe.innerText.trim();
+              if (text === '' || text === '-') {
+                target = currentProbe;
+                break;
+              }
+            } else {
+              target = currentProbe;
+              break;
+            }
+          }
+        }
+      }
+
+      if (target && target.classList.contains('editable')) {
+        target.click();
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
       cell.contentEditable = false;
       cell.classList.remove('editing');
       cell.innerHTML = originalContent;
-      cell.removeEventListener('blur', handleBlur);
-      cell.removeEventListener('keydown', handleKeydown);
+      cleanup();
     }
   };
+
+  cell.classList.add('editing');
+  cell.contentEditable = true;
+  cell.focus();
+  // Select all text in the cell
+  const range = document.createRange();
+  range.selectNodeContents(cell);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 
   cell.addEventListener('blur', handleBlur);
   cell.addEventListener('keydown', handleKeydown);
