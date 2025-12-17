@@ -34,16 +34,10 @@ async function sync() {
 
     } catch (error) {
         console.error('Sync failed:', error);
+        process.exit(1);
     } finally {
-        // We don't need to disconnect explicitly if the app is long running,
-        // but for a script it helps finish the process.
-        // However, db.js instances might be shared.
-        // Since this is a standalone run of the script:
-        // We can't easily disconnect the instances from db.js as they are exported instances.
-        // But node should exit when the event loop is empty.
-        // Prisma clients handle connection pooling.
-        // We'll force exit to be sure.
-        process.exit(0);
+        await localDb.$disconnect();
+        await remoteDb.$disconnect();
     }
 }
 
