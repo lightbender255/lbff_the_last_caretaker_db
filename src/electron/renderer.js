@@ -3,6 +3,8 @@ let filteredPOIs = [];
 let currentSortField = null;
 let currentSortDirection = 'asc';
 
+const NUMERIC_POI_FIELDS = ['x', 'y', 'depth_m', 'ocean_floor_depth_m', 'top_depth_m', 'max_explored_depth_m', 'max_psi_reached'];
+
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
 const typeFilter = document.getElementById('typeFilter');
@@ -10,7 +12,9 @@ const clearBtn = document.getElementById('clearBtn');
 const poiTableBody = document.getElementById('poiTableBody');
 const totalCount = document.getElementById('totalCount');
 const showingCount = document.getElementById('showingCount');
+const inlineError = document.getElementById('inlineError');
 const errorContainer = document.getElementById('errorContainer');
+
 
 // Load all POIs
 async function loadAllPOIs() {
@@ -198,6 +202,10 @@ function handleCellEdit(e) {
   const cell = e.target;
   if (cell.classList.contains('editing')) return;
 
+  // Clear previous errors
+  inlineError.textContent = '';
+  cell.style.outline = '';
+
   const currentText = cell.innerText === '-' ? '' : cell.innerText;
   const originalContent = cell.innerHTML;
 
@@ -225,10 +233,12 @@ function handleCellEdit(e) {
     let typedValue = newValue;
 
     // Type conversion for numeric fields
-    if (['x', 'y', 'depth_m', 'ocean_floor_depth_m', 'top_depth_m', 'max_explored_depth_m', 'max_psi_reached'].includes(field)) {
+    if (NUMERIC_POI_FIELDS.includes(field)) {
       typedValue = newValue === null ? null : parseFloat(newValue);
       if (newValue !== null && isNaN(typedValue)) {
-        alert('Invalid number');
+        // Show error UI
+        inlineError.textContent = 'Error: Invalid number format';
+        cell.style.outline = '2px solid red';
         cell.innerHTML = originalContent;
         return;
       }
@@ -242,14 +252,17 @@ function handleCellEdit(e) {
         // Flash green
         cell.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
         setTimeout(() => cell.style.backgroundColor = '', 1000);
+        inlineError.textContent = '';
         // Update data in local array if needed, or just reload
         loadAllPOIs();
       } else {
-        showError(`Update failed: ${result.error}`);
+        inlineError.textContent = `Update failed: ${result.error}`;
+        cell.style.outline = '2px solid red';
         cell.innerHTML = originalContent;
       }
     } catch (error) {
-      showError(`Error: ${error.message}`);
+      inlineError.textContent = `Error: ${error.message}`;
+      cell.style.outline = '2px solid red';
       cell.innerHTML = originalContent;
     }
   };
@@ -275,268 +288,268 @@ function handleCellEdit(e) {
 
   cell.addEventListener('blur', handleBlur);
   cell.addEventListener('keydown', handleKeydown);
-}
 
-// Show loading message
-function showLoading() {
-  poiTableBody.innerHTML = '<tr><td colspan="12" class="loading">Loading...</td></tr>';
-}
 
-// Show error message
-function showError(message) {
-  errorContainer.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
-}
-
-// Clear error message
-function clearError() {
-  errorContainer.innerHTML = '';
-}
-
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-  if (text === null || text === undefined) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Clear all filters
-function clearFilters() {
-  searchInput.value = '';
-  typeFilter.value = '';
-  filteredPOIs = allPOIs;
-  renderPOIs(allPOIs);
-}
-
-// Event Listeners
-clearBtn.addEventListener('click', clearFilters);
-
-searchInput.addEventListener('input', (e) => {
-  const searchTerm = e.target.value;
-  if (searchTerm.length >= 2 || searchTerm.length === 0) {
-    searchPOIs(searchTerm);
+  // Show loading message
+  function showLoading() {
+    poiTableBody.innerHTML = '<tr><td colspan="12" class="loading">Loading...</td></tr>';
   }
-});
 
-typeFilter.addEventListener('change', (e) => {
-  filterByType(e.target.value);
-});
+  // Show error message
+  function showError(message) {
+    errorContainer.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+  }
 
-// Load POIs on startup
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('Database Viewer Ready');
-  loadAllPOIs();
+  // Clear error message
+  function clearError() {
+    errorContainer.innerHTML = '';
+  }
 
-  // Listen for database updates
-  window.dbAPI.onDatabaseUpdated(() => {
-    console.log('Database updated externally, refreshing...');
-    loadAllPOIs();
+  // Escape HTML to prevent XSS
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Clear all filters
+  function clearFilters() {
+    searchInput.value = '';
+    typeFilter.value = '';
+    filteredPOIs = allPOIs;
+    renderPOIs(allPOIs);
+  }
+
+  // Event Listeners
+  clearBtn.addEventListener('click', clearFilters);
+
+  searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value;
+    if (searchTerm.length >= 2 || searchTerm.length === 0) {
+      searchPOIs(searchTerm);
+    }
   });
 
-  // Sort Event Listeners
-  document.querySelectorAll('th.sortable').forEach(th => {
-    th.addEventListener('click', () => {
-      const field = th.dataset.sort;
-      if (field) {
-        sortPOIs(field);
-      }
+  typeFilter.addEventListener('change', (e) => {
+    filterByType(e.target.value);
+  });
+
+  // Load POIs on startup
+  window.addEventListener('DOMContentLoaded', () => {
+    console.log('Database Viewer Ready');
+    loadAllPOIs();
+
+    // Listen for database updates
+    window.dbAPI.onDatabaseUpdated(() => {
+      console.log('Database updated externally, refreshing...');
+      loadAllPOIs();
+    });
+
+    // Sort Event Listeners
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const field = th.dataset.sort;
+        if (field) {
+          sortPOIs(field);
+        }
+      });
     });
   });
-});
 
-// Modal Elements
-const addPoiModal = document.getElementById('addPoiModal');
-const addPoiBtn = document.getElementById('addPoiBtn');
-const closeAddModal = document.querySelector('#addPoiModal .close-modal');
-const cancelAddBtn = document.getElementById('cancelAddBtn');
-const addPoiForm = document.getElementById('addPoiForm');
-const typeList = document.getElementById('typeList');
-const deletePoiBtn = document.getElementById('deletePoiBtn');
-const deleteConfirmModal = document.getElementById('deleteConfirmModal');
-const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
-const closeDeleteModal = document.querySelector('#deleteConfirmModal .close-modal');
-const closeAppBtn = document.getElementById('closeAppBtn');
+  // Modal Elements
+  const addPoiModal = document.getElementById('addPoiModal');
+  const addPoiBtn = document.getElementById('addPoiBtn');
+  const closeAddModal = document.querySelector('#addPoiModal .close-modal');
+  const cancelAddBtn = document.getElementById('cancelAddBtn');
+  const addPoiForm = document.getElementById('addPoiForm');
+  const typeList = document.getElementById('typeList');
+  const deletePoiBtn = document.getElementById('deletePoiBtn');
+  const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+  const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+  const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+  const closeDeleteModal = document.querySelector('#deleteConfirmModal .close-modal');
+  const closeAppBtn = document.getElementById('closeAppBtn');
 
-let currentEditingId = null;
+  let currentEditingId = null;
 
-// Modal Functions
-async function openAddModal(poi = null) {
-  addPoiModal.style.display = 'flex';
+  // Modal Functions
+  async function openAddModal(poi = null) {
+    addPoiModal.style.display = 'flex';
 
-  // Reset form and state
-  addPoiForm.reset();
-  currentEditingId = null;
-  document.querySelector('#addPoiModal h2').textContent = 'Add New POI';
-  deletePoiBtn.style.display = 'none';
+    // Reset form and state
+    addPoiForm.reset();
+    currentEditingId = null;
+    document.querySelector('#addPoiModal h2').textContent = 'Add New POI';
+    deletePoiBtn.style.display = 'none';
 
-  // Helper to populate select
-  const populateSelect = async (elementId, category) => {
-    const select = document.getElementById(elementId);
-    if (!select) return;
+    // Helper to populate select
+    const populateSelect = async (elementId, category) => {
+      const select = document.getElementById(elementId);
+      if (!select) return;
 
-    // Clear existing options except the first one
-    while (select.options.length > 1) {
-      select.remove(1);
-    }
+      // Clear existing options except the first one
+      while (select.options.length > 1) {
+        select.remove(1);
+      }
 
-    try {
-      const result = await window.dbAPI.getLookupValues(category);
+      try {
+        const result = await window.dbAPI.getLookupValues(category);
+        if (result.success) {
+          result.data.forEach(val => {
+            const option = document.createElement('option');
+            option.value = val;
+            option.textContent = val;
+            select.appendChild(option);
+          });
+        }
+      } catch (e) {
+        console.error(`Error populating ${category}:`, e);
+      }
+    };
+
+    // Populate all dropdowns
+    await Promise.all([
+      populateSelect('poiBioHostiles', 'Bio Hostiles'),
+      populateSelect('poiMechHostiles', 'Mech Hostiles'),
+      populateSelect('poiSalvage', 'Salvage'),
+      populateSelect('poiPower', 'Power'),
+      populateSelect('poiBeacon', 'Beacon')
+    ]);
+
+    // Populate type datalist
+    window.dbAPI.getPOITypes().then(result => {
       if (result.success) {
-        result.data.forEach(val => {
+        typeList.innerHTML = '';
+        result.data.forEach(type => {
           const option = document.createElement('option');
-          option.value = val;
-          option.textContent = val;
-          select.appendChild(option);
+          option.value = type;
+          typeList.appendChild(option);
         });
       }
-    } catch (e) {
-      console.error(`Error populating ${category}:`, e);
+    });
+
+    // If editing, populate form
+    if (poi) {
+      currentEditingId = poi.id;
+      document.querySelector('#addPoiModal h2').textContent = 'Edit POI';
+      deletePoiBtn.style.display = 'block';
+
+      document.getElementById('poiName').value = poi.name || '';
+      document.getElementById('poiX').value = poi.x || '';
+      document.getElementById('poiY').value = poi.y || '';
+      document.getElementById('poiType').value = poi.type || '';
+      document.getElementById('poiDepthM').value = poi.depth_m || '';
+      document.getElementById('poiOceanFloorDepthM').value = poi.ocean_floor_depth_m || '';
+      document.getElementById('poiTopDepthM').value = poi.top_depth_m || '';
+      document.getElementById('poiMaxExploredDepthM').value = poi.max_explored_depth_m || '';
+      document.getElementById('poiMaxPsiReached').value = poi.max_psi_reached || '';
+      document.getElementById('poiBioHostiles').value = poi.bio_hostiles || '';
+      document.getElementById('poiMechHostiles').value = poi.mech_hostiles || '';
+      document.getElementById('poiSalvage').value = poi.salvage || '';
+      document.getElementById('poiPower').value = poi.power || '';
+      document.getElementById('poiBeacon').value = poi.beacon || '';
+      document.getElementById('poiNotes').value = poi.notes || '';
     }
-  };
+  }
 
-  // Populate all dropdowns
-  await Promise.all([
-    populateSelect('poiBioHostiles', 'Bio Hostiles'),
-    populateSelect('poiMechHostiles', 'Mech Hostiles'),
-    populateSelect('poiSalvage', 'Salvage'),
-    populateSelect('poiPower', 'Power'),
-    populateSelect('poiBeacon', 'Beacon')
-  ]);
+  function closeAddModalFunc() {
+    addPoiModal.style.display = 'none';
+    addPoiForm.reset();
+    currentEditingId = null;
+  }
 
-  // Populate type datalist
-  window.dbAPI.getPOITypes().then(result => {
-    if (result.success) {
-      typeList.innerHTML = '';
-      result.data.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type;
-        typeList.appendChild(option);
-      });
+  function openDeleteConfirmModal() {
+    deleteConfirmModal.style.display = 'flex';
+  }
+
+  function closeDeleteConfirmModalFunc() {
+    deleteConfirmModal.style.display = 'none';
+  }
+
+  // Add POI Event Listeners
+  addPoiBtn.addEventListener('click', () => openAddModal(null));
+  closeAddModal.addEventListener('click', closeAddModalFunc);
+  cancelAddBtn.addEventListener('click', closeAddModalFunc);
+
+  // Close modal when clicking outside
+  // Close modal when clicking outside
+  window.addEventListener('click', (e) => {
+    if (e.target === addPoiModal) {
+      closeAddModalFunc();
+    }
+    if (e.target === deleteConfirmModal) {
+      closeDeleteConfirmModalFunc();
     }
   });
 
-  // If editing, populate form
-  if (poi) {
-    currentEditingId = poi.id;
-    document.querySelector('#addPoiModal h2').textContent = 'Edit POI';
-    deletePoiBtn.style.display = 'block';
+  // Delete Flow
+  deletePoiBtn.addEventListener('click', openDeleteConfirmModal);
+  cancelDeleteBtn.addEventListener('click', closeDeleteConfirmModalFunc);
+  closeDeleteModal.addEventListener('click', closeDeleteConfirmModalFunc);
 
-    document.getElementById('poiName').value = poi.name || '';
-    document.getElementById('poiX').value = poi.x || '';
-    document.getElementById('poiY').value = poi.y || '';
-    document.getElementById('poiType').value = poi.type || '';
-    document.getElementById('poiDepthM').value = poi.depth_m || '';
-    document.getElementById('poiOceanFloorDepthM').value = poi.ocean_floor_depth_m || '';
-    document.getElementById('poiTopDepthM').value = poi.top_depth_m || '';
-    document.getElementById('poiMaxExploredDepthM').value = poi.max_explored_depth_m || '';
-    document.getElementById('poiMaxPsiReached').value = poi.max_psi_reached || '';
-    document.getElementById('poiBioHostiles').value = poi.bio_hostiles || '';
-    document.getElementById('poiMechHostiles').value = poi.mech_hostiles || '';
-    document.getElementById('poiSalvage').value = poi.salvage || '';
-    document.getElementById('poiPower').value = poi.power || '';
-    document.getElementById('poiBeacon').value = poi.beacon || '';
-    document.getElementById('poiNotes').value = poi.notes || '';
+  // Close App Flow
+  if (closeAppBtn) {
+    closeAppBtn.addEventListener('click', async () => {
+      await window.dbAPI.closeApp();
+    });
   }
-}
 
-function closeAddModalFunc() {
-  addPoiModal.style.display = 'none';
-  addPoiForm.reset();
-  currentEditingId = null;
-}
-
-function openDeleteConfirmModal() {
-  deleteConfirmModal.style.display = 'flex';
-}
-
-function closeDeleteConfirmModalFunc() {
-  deleteConfirmModal.style.display = 'none';
-}
-
-// Add POI Event Listeners
-addPoiBtn.addEventListener('click', () => openAddModal(null));
-closeAddModal.addEventListener('click', closeAddModalFunc);
-cancelAddBtn.addEventListener('click', closeAddModalFunc);
-
-// Close modal when clicking outside
-// Close modal when clicking outside
-window.addEventListener('click', (e) => {
-  if (e.target === addPoiModal) {
-    closeAddModalFunc();
-  }
-  if (e.target === deleteConfirmModal) {
-    closeDeleteConfirmModalFunc();
-  }
-});
-
-// Delete Flow
-deletePoiBtn.addEventListener('click', openDeleteConfirmModal);
-cancelDeleteBtn.addEventListener('click', closeDeleteConfirmModalFunc);
-closeDeleteModal.addEventListener('click', closeDeleteConfirmModalFunc);
-
-// Close App Flow
-if (closeAppBtn) {
-  closeAppBtn.addEventListener('click', async () => {
-    await window.dbAPI.closeApp();
+  confirmDeleteBtn.addEventListener('click', async () => {
+    if (currentEditingId) {
+      try {
+        const result = await window.dbAPI.deletePOI(currentEditingId);
+        if (result.success) {
+          closeDeleteConfirmModalFunc();
+          closeAddModalFunc();
+          loadAllPOIs();
+        } else {
+          alert(`Failed to delete POI: ${result.error}`);
+        }
+      } catch (error) {
+        alert(`Error deleting POI: ${error.message}`);
+      }
+    }
   });
-}
 
-confirmDeleteBtn.addEventListener('click', async () => {
-  if (currentEditingId) {
+  // Handle Form Submission
+  addPoiForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = {
+      name: document.getElementById('poiName').value,
+      x: document.getElementById('poiX').value ? parseFloat(document.getElementById('poiX').value) : null,
+      y: document.getElementById('poiY').value ? parseFloat(document.getElementById('poiY').value) : null,
+      type: document.getElementById('poiType').value || null,
+      depth_m: document.getElementById('poiDepthM').value ? parseFloat(document.getElementById('poiDepthM').value) : null,
+      ocean_floor_depth_m: document.getElementById('poiOceanFloorDepthM').value ? parseFloat(document.getElementById('poiOceanFloorDepthM').value) : null,
+      top_depth_m: document.getElementById('poiTopDepthM').value ? parseFloat(document.getElementById('poiTopDepthM').value) : null,
+      max_explored_depth_m: document.getElementById('poiMaxExploredDepthM').value ? parseFloat(document.getElementById('poiMaxExploredDepthM').value) : null,
+      bio_hostiles: document.getElementById('poiBioHostiles').value || null,
+      mech_hostiles: document.getElementById('poiMechHostiles').value || null,
+      salvage: document.getElementById('poiSalvage').value || null,
+      power: document.getElementById('poiPower').value || null,
+      beacon: document.getElementById('poiBeacon').value || null,
+      max_psi_reached: document.getElementById('poiMaxPsiReached').value ? parseFloat(document.getElementById('poiMaxPsiReached').value) : null,
+      notes: document.getElementById('poiNotes').value || null
+    };
+
     try {
-      const result = await window.dbAPI.deletePOI(currentEditingId);
-      if (result.success) {
-        closeDeleteConfirmModalFunc();
-        closeAddModalFunc();
-        loadAllPOIs();
+      let result;
+      if (currentEditingId) {
+        result = await window.dbAPI.updatePOI(currentEditingId, formData);
       } else {
-        alert(`Failed to delete POI: ${result.error}`);
+        result = await window.dbAPI.createPOI(formData);
+      }
+
+      if (result.success) {
+        closeAddModalFunc();
+        loadAllPOIs(); // Refresh grid
+        // Optional: Show success message
+      } else {
+        alert(`Failed to ${currentEditingId ? 'update' : 'create'} POI: ${result.error}`);
       }
     } catch (error) {
-      alert(`Error deleting POI: ${error.message}`);
+      alert(`Error: ${error.message}`);
     }
-  }
-});
-
-// Handle Form Submission
-addPoiForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const formData = {
-    name: document.getElementById('poiName').value,
-    x: document.getElementById('poiX').value ? parseFloat(document.getElementById('poiX').value) : null,
-    y: document.getElementById('poiY').value ? parseFloat(document.getElementById('poiY').value) : null,
-    type: document.getElementById('poiType').value || null,
-    depth_m: document.getElementById('poiDepthM').value ? parseFloat(document.getElementById('poiDepthM').value) : null,
-    ocean_floor_depth_m: document.getElementById('poiOceanFloorDepthM').value ? parseFloat(document.getElementById('poiOceanFloorDepthM').value) : null,
-    top_depth_m: document.getElementById('poiTopDepthM').value ? parseFloat(document.getElementById('poiTopDepthM').value) : null,
-    max_explored_depth_m: document.getElementById('poiMaxExploredDepthM').value ? parseFloat(document.getElementById('poiMaxExploredDepthM').value) : null,
-    bio_hostiles: document.getElementById('poiBioHostiles').value || null,
-    mech_hostiles: document.getElementById('poiMechHostiles').value || null,
-    salvage: document.getElementById('poiSalvage').value || null,
-    power: document.getElementById('poiPower').value || null,
-    beacon: document.getElementById('poiBeacon').value || null,
-    max_psi_reached: document.getElementById('poiMaxPsiReached').value ? parseFloat(document.getElementById('poiMaxPsiReached').value) : null,
-    notes: document.getElementById('poiNotes').value || null
-  };
-
-  try {
-    let result;
-    if (currentEditingId) {
-      result = await window.dbAPI.updatePOI(currentEditingId, formData);
-    } else {
-      result = await window.dbAPI.createPOI(formData);
-    }
-
-    if (result.success) {
-      closeAddModalFunc();
-      loadAllPOIs(); // Refresh grid
-      // Optional: Show success message
-    } else {
-      alert(`Failed to ${currentEditingId ? 'update' : 'create'} POI: ${result.error}`);
-    }
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  }
-});
+  });
