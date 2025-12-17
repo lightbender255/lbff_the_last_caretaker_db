@@ -226,7 +226,7 @@ function handleCellEdit(e) {
 
     // Type conversion for numeric fields
     if (['x', 'y', 'depth_m', 'ocean_floor_depth_m', 'top_depth_m', 'max_explored_depth_m', 'max_psi_reached'].includes(field)) {
-      typedValue = newValue === null ? null : parseInt(newValue, 10);
+      typedValue = newValue === null ? null : parseFloat(newValue);
       if (newValue !== null && isNaN(typedValue)) {
         alert('Invalid number');
         cell.innerHTML = originalContent;
