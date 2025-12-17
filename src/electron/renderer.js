@@ -237,7 +237,7 @@ function handleCellEdit(e) {
       typedValue = newValue === null ? null : parseFloat(newValue);
       if (newValue !== null && isNaN(typedValue)) {
         // Show error UI
-        inlineError.textContent = 'Error: Invalid number format';
+        inlineError.textContent = 'Error: Invalid number. Valid: 123.07';
         cell.style.outline = '2px solid red';
         cell.innerHTML = originalContent;
         return;
