@@ -184,16 +184,17 @@ function renderPOIs(pois) {
   });
 
   showingCount.textContent = pois.length;
-  // attachEditListeners(); // Inline editing might conflict, disabling for now as per "click on row should open details modal"
+  attachEditListeners();
 }
 
 function attachEditListeners() {
   document.querySelectorAll('.editable').forEach(cell => {
-    cell.addEventListener('dblclick', handleCellEdit);
+    cell.addEventListener('click', handleCellEdit); // Changed to single click
   });
 }
 
 function handleCellEdit(e) {
+  e.stopPropagation(); // Prevent row click (modal)
   const cell = e.target;
   if (cell.classList.contains('editing')) return;
 
