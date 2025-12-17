@@ -38,11 +38,15 @@ async function importData() {
         });
         
         // Use createMany for better performance
-        await prisma.poi.createMany({
-            data: poiData
-        });
-        
-        console.log('POIs imported successfully.');
+        try {
+            await prisma.poi.createMany({
+                data: poiData
+            });
+            console.log('POIs imported successfully.');
+        } catch (error) {
+            console.error('Failed to import POIs:', error.message);
+            throw error;
+        }
         
         // Check for lookup values
         const lookupInserts = extractInserts(sqlContent, 'lookup_values');
@@ -58,10 +62,15 @@ async function importData() {
                 };
             });
             
-            await prisma.lookupValue.createMany({
-                data: lookupData
-            });
-            console.log('Lookup values imported successfully.');
+            try {
+                await prisma.lookupValue.createMany({
+                    data: lookupData
+                });
+                console.log('Lookup values imported successfully.');
+            } catch (error) {
+                console.error('Failed to import lookup values:', error.message);
+                throw error;
+            }
         }
         
         const count = await prisma.poi.count();
@@ -78,6 +87,8 @@ async function importData() {
 function extractInserts(sqlContent, tableName) {
     // Extract INSERT statements for the given table
     // Handles basic single-line INSERT statements
+    // Note: This regex assumes VALUES content doesn't contain semicolons in string literals.
+    // For more complex SQL, consider using a proper SQL parser.
     const insertRegex = new RegExp(
         `INSERT INTO ${tableName} \\([^)]+\\) VALUES \\(([^;]+)\\);`,
         'g'
@@ -109,7 +120,7 @@ function parseValues(valuesStr) {
         if (char === "'") {
             if (inString) {
                 // Check for doubled single quote
-                if (valuesStr[i + 1] === "'") {
+                if (i + 1 < valuesStr.length && valuesStr[i + 1] === "'") {
                     current += "'";
                     i++;
                 } else {
