@@ -36,8 +36,12 @@ async function sync() {
         console.error('Sync failed:', error);
         process.exit(1);
     } finally {
-        await localDb.$disconnect();
-        await remoteDb.$disconnect();
+        try {
+            await localDb.$disconnect();
+            await remoteDb.$disconnect();
+        } catch (disconnectError) {
+            console.error('Error disconnecting:', disconnectError);
+        }
     }
 }
 
