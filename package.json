@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "release": "node scripts/release.js",
+    "postinstall": "prisma generate --schema ./data/schema.local.prisma && prisma generate --schema ./data/schema.remote.prisma"
   },
   "build": {
     "appId": "ca.lightbender255.lbff-tlc-poi-tracker",

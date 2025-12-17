@@ -1,4 +1,4 @@
-Found 27 POIs in SQLite database
+-- Found 27 POIs in SQLite database
 INSERT INTO poi (name, x, y, type, bio_hostiles, mech_hostiles, salvage, power, beacon, depth_m, ocean_floor_depth_m, top_depth_m, max_explored_depth_m, max_psi_reached, notes) VALUES ('The Last Listener Station', 115, 11, 'Beacon', 'Cleared', 'Yes', 'WIP', 'Yes', 'WIP', 0, NULL, NULL, NULL, NULL, 'Need MOSES access clearance to get into beacon room. Where do I get the access?');
 INSERT INTO poi (name, x, y, type, bio_hostiles, mech_hostiles, salvage, power, beacon, depth_m, ocean_floor_depth_m, top_depth_m, max_explored_depth_m, max_psi_reached, notes) VALUES ('Habitat Node 04-7', 82, -15, 'Habitat', 'No', '0', 'Cleared', 'N.A.', 'None', 0, NULL, NULL, NULL, NULL, 'Unknown');
 INSERT INTO poi (name, x, y, type, bio_hostiles, mech_hostiles, salvage, power, beacon, depth_m, ocean_floor_depth_m, top_depth_m, max_explored_depth_m, max_psi_reached, notes) VALUES ('Habitat Node 02-23', 47, -49, 'Habitat', 'Cleared', 'Yes', 'WIP', 'N.A.', 'None', 0, NULL, NULL, NULL, NULL, 'Unknown');
