@@ -11,58 +11,56 @@ async function importData() {
         const sqlPath = path.join(__dirname, '../data/poi_data.sql');
         const sqlContent = fs.readFileSync(sqlPath, 'utf-8');
         
-        // Extract INSERT statements
-        const insertRegex = /INSERT INTO poi \([^)]+\) VALUES \(([^;]+)\);/g;
-        const matches = [...sqlContent.matchAll(insertRegex)];
+        // Extract INSERT statements and batch import for better performance
+        const poiInserts = extractInserts(sqlContent, 'poi');
         
-        console.log(`Found ${matches.length} POI records to import.`);
+        console.log(`Found ${poiInserts.length} POI records to import.`);
         
-        for (const match of matches) {
-            const values = match[1];
-            // Parse the values (basic parsing - handles strings, numbers, and NULL)
+        const poiData = poiInserts.map(values => {
             const parsed = parseValues(values);
-            
-            await prisma.poi.create({
-                data: {
-                    name: asString(parsed[0]),
-                    x: asInt(parsed[1]),
-                    y: asInt(parsed[2]),
-                    type: asString(parsed[3]),
-                    bio_hostiles: asString(parsed[4]),
-                    mech_hostiles: asString(parsed[5]),
-                    salvage: asString(parsed[6]),
-                    power: asString(parsed[7]),
-                    beacon: asString(parsed[8]),
-                    depth_m: asInt(parsed[9]),
-                    ocean_floor_depth_m: asInt(parsed[10]),
-                    top_depth_m: asInt(parsed[11]),
-                    max_explored_depth_m: asInt(parsed[12]),
-                    max_psi_reached: asInt(parsed[13]),
-                    notes: asString(parsed[14])
-                }
-            });
-        }
+            return {
+                name: asString(parsed[0]),
+                x: asInt(parsed[1]),
+                y: asInt(parsed[2]),
+                type: asString(parsed[3]),
+                bio_hostiles: asString(parsed[4]),
+                mech_hostiles: asString(parsed[5]),
+                salvage: asString(parsed[6]),
+                power: asString(parsed[7]),
+                beacon: asString(parsed[8]),
+                depth_m: asInt(parsed[9]),
+                ocean_floor_depth_m: asInt(parsed[10]),
+                top_depth_m: asInt(parsed[11]),
+                max_explored_depth_m: asInt(parsed[12]),
+                max_psi_reached: asInt(parsed[13]),
+                notes: asString(parsed[14])
+            };
+        });
+        
+        // Use createMany for better performance
+        await prisma.poi.createMany({
+            data: poiData
+        });
         
         console.log('POIs imported successfully.');
         
         // Check for lookup values
-        const lookupRegex = /INSERT INTO lookup_values \([^)]+\) VALUES \(([^;]+)\);/g;
-        const lookupMatches = [...sqlContent.matchAll(lookupRegex)];
+        const lookupInserts = extractInserts(sqlContent, 'lookup_values');
         
-        if (lookupMatches.length > 0) {
-            console.log(`Found ${lookupMatches.length} lookup values to import.`);
+        if (lookupInserts.length > 0) {
+            console.log(`Found ${lookupInserts.length} lookup values to import.`);
             
-            for (const match of lookupMatches) {
-                const values = match[1];
+            const lookupData = lookupInserts.map(values => {
                 const parsed = parseValues(values);
-                
-                await prisma.lookupValue.create({
-                    data: {
-                        category: parsed[1],
-                        value: parsed[2]
-                    }
-                });
-            }
+                return {
+                    category: asString(parsed[1]),
+                    value: asString(parsed[2])
+                };
+            });
+            
+            await prisma.lookupValue.createMany({
+                data: lookupData
+            });
             console.log('Lookup values imported successfully.');
         }
         
@@ -75,6 +73,17 @@ async function importData() {
     } finally {
         await prisma.$disconnect();
     }
+}
+
+function extractInserts(sqlContent, tableName) {
+    // Extract INSERT statements for the given table
+    // Handles basic single-line INSERT statements
+    const insertRegex = new RegExp(
+        `INSERT INTO ${tableName} \\([^)]+\\) VALUES \\(([^;]+)\\);`,
+        'g'
+    );
+    const matches = [...sqlContent.matchAll(insertRegex)];
+    return matches.map(m => m[1]);
 }
 
 function parseValues(valuesStr) {
