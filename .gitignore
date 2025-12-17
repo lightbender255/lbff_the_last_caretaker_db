@@ -8,3 +8,5 @@ dist/
 *.sqlite
 
 src/generated/
+lbff/ai_workfiles/
+lbff_the_last_caretaker_db.code-workspace
