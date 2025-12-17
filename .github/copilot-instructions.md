@@ -37,7 +37,7 @@ This is an Electron desktop application that provides a SQLite database interfac
 ## Development Commands
 - `npm start` - Start the Electron application in production mode
 - `npm run dev` - Start the Electron application in development mode with hot reload
-- `npm run dist` - Build distributable packages (MSI and EXE for Windows, AppImage and DEB for Linux)
+- `npm run dist` - Build distributable packages (MSI for Windows, DEB for Linux)
 
 ## Key Dependencies
 - `electron` - Desktop application framework
@@ -72,7 +72,7 @@ The app uses Electron's IPC (Inter-Process Communication):
 
 ## Build and Release
 - CI/CD runs on push to `main` branch
-- Builds for both Ubuntu (AppImage, DEB) and Windows (MSI, EXE)
+- Builds for both Windows (MSI) and Linux (DEB)
 - Tagged releases trigger automatic GitHub releases
 
 ## Utility Scripts
